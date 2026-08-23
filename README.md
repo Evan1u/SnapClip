@@ -8,6 +8,7 @@
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
+  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.0.0"><img alt="Release: v1.0.0" src="https://img.shields.io/badge/Release-v1.0.0-E98673?style=flat-square"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
 </p>
 
@@ -58,9 +59,21 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 - **可调设置**：重新录制两组全局快捷键、关闭截图音效、设置登录时启动或恢复默认值。
 - **本地与轻量**：无轮询定时器、无网络请求、无持久截图数据库、零第三方运行时依赖。
 
-## 当前发布状态
+## 下载
 
-仓库目前提供源码，尚未发布可直接下载的签名 `.app` 或安装包。首版定位为自用构建，不包含 Developer ID 公证、自动更新或 Mac App Store 版本。
+[下载 SnapClip v1.0.0（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.zip)
+
+- 系统要求：Apple Silicon Mac、macOS 14 或更高版本。
+- 文件：`SnapClip-v1.0.0-arm64.zip`，约 322 KiB。
+- SHA-256：`69df2fff04ec8745666ab87bd5a756631d42b86182cd1421b611a58ee81ed5a7`
+
+### 安装
+
+1. 解压 ZIP，把 `SnapClip.app` 移到 `/Applications`。
+2. 首次尝试打开后，如果 macOS 阻止运行，请前往 **系统设置 → 隐私与安全性**，在安全提示处选择 **仍要打开**。
+3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
+
+> `v1.0.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
 
 ### 从源码运行
 
