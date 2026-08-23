@@ -1,0 +1,10 @@
+01 快捷键截图后，图片立即进入系统剪贴板。
+02 The newest screenshot appears first in history.
+03 历史最多保存三张，退出应用即清空。
+04 OCR runs locally with Apple Vision.
+05 支持简体中文、繁體中文和 English。
+06 Preview reuses one lightweight window.
+07 空闲时不轮询，CPU 应接近零。
+08 Privacy first: no upload, no analytics.
+09 截图失败不会修改历史记录。
+10 Copy text, paste anywhere, keep moving.

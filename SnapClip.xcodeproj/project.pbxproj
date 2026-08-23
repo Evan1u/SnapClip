@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000101 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* AppModel.swift */; };
+		A00000000000000000000102 /* CaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* CaptureService.swift */; };
+		A00000000000000000000103 /* HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000003 /* HotKeyService.swift */; };
+		A00000000000000000000104 /* MenuBarContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* MenuBarContentView.swift */; };
+		A00000000000000000000105 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* Models.swift */; };
+		A00000000000000000000106 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000006 /* PreferencesView.swift */; };
+		A00000000000000000000107 /* PreviewWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000007 /* PreviewWindowController.swift */; };
+		A00000000000000000000108 /* SnapClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* SnapClipApp.swift */; };
+		A00000000000000000000109 /* SystemServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* SystemServices.swift */; };
+		A0000000000000000000010A /* SnapClipDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* SnapClipDesign.swift */; };
+		A00000000000000000000111 /* CaptureServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* CaptureServiceTests.swift */; };
+		A00000000000000000000112 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* HistoryStoreTests.swift */; };
+		A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* HotKeyShortcutTests.swift */; };
+		A00000000000000000000114 /* OCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000014 /* OCRServiceTests.swift */; };
+		A00000000000000000000115 /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* AppModelTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A00000000000000000000301 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A00000000000000000000601 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A00000000000000000000401;
+			remoteInfo = SnapClip;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000001 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		A00000000000000000000002 /* CaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureService.swift; sourceTree = "<group>"; };
+		A00000000000000000000003 /* HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyService.swift; sourceTree = "<group>"; };
+		A00000000000000000000004 /* MenuBarContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarContentView.swift; sourceTree = "<group>"; };
+		A00000000000000000000005 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A00000000000000000000006 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		A00000000000000000000007 /* PreviewWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewWindowController.swift; sourceTree = "<group>"; };
+		A00000000000000000000008 /* SnapClipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipApp.swift; sourceTree = "<group>"; };
+		A00000000000000000000009 /* SystemServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemServices.swift; sourceTree = "<group>"; };
+		A0000000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A0000000000000000000000B /* SnapClipDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipDesign.swift; sourceTree = "<group>"; };
+		A00000000000000000000011 /* CaptureServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureServiceTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000012 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000013 /* HotKeyShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyShortcutTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000014 /* OCRServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000015 /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000021 /* PRD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD.md; sourceTree = "<group>"; };
+		A00000000000000000000022 /* brand-spec.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "brand-spec.md"; sourceTree = "<group>"; };
+		A00000000000000000000031 /* SnapClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000032 /* SnapClipTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SnapClipTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000000000000000000201 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000202 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000000000000000000501 = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000502 /* SnapClip */,
+				A00000000000000000000503 /* SnapClipTests */,
+				A00000000000000000000504 /* docs */,
+				A00000000000000000000505 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000000000000000000502 /* SnapClip */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000008 /* SnapClipApp.swift */,
+				A00000000000000000000005 /* Models.swift */,
+				A00000000000000000000001 /* AppModel.swift */,
+				A00000000000000000000002 /* CaptureService.swift */,
+				A00000000000000000000009 /* SystemServices.swift */,
+				A00000000000000000000003 /* HotKeyService.swift */,
+				A0000000000000000000000B /* SnapClipDesign.swift */,
+				A00000000000000000000004 /* MenuBarContentView.swift */,
+				A00000000000000000000006 /* PreferencesView.swift */,
+				A00000000000000000000007 /* PreviewWindowController.swift */,
+				A0000000000000000000000A /* Info.plist */,
+			);
+			path = SnapClip;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000503 /* SnapClipTests */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000015 /* AppModelTests.swift */,
+				A00000000000000000000011 /* CaptureServiceTests.swift */,
+				A00000000000000000000012 /* HistoryStoreTests.swift */,
+				A00000000000000000000013 /* HotKeyShortcutTests.swift */,
+				A00000000000000000000014 /* OCRServiceTests.swift */,
+			);
+			path = SnapClipTests;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000504 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000021 /* PRD.md */,
+				A00000000000000000000022 /* brand-spec.md */,
+			);
+			path = docs;
+			sourceTree = "<group>";
+		};
+		A00000000000000000000505 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000000000000000000031 /* SnapClip.app */,
+				A00000000000000000000032 /* SnapClipTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000000000000000000401 /* SnapClip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000802 /* Build configuration list for PBXNativeTarget "SnapClip" */;
+			buildPhases = (
+				A00000000000000000000701 /* Sources */,
+				A00000000000000000000201 /* Frameworks */,
+				A00000000000000000000901 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SnapClip;
+			productName = SnapClip;
+			productReference = A00000000000000000000031 /* SnapClip.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A00000000000000000000402 /* SnapClipTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000000000000000000803 /* Build configuration list for PBXNativeTarget "SnapClipTests" */;
+			buildPhases = (
+				A00000000000000000000702 /* Sources */,
+				A00000000000000000000202 /* Frameworks */,
+				A00000000000000000000902 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A00000000000000000000302 /* PBXTargetDependency */,
+			);
+			name = SnapClipTests;
+			productName = SnapClipTests;
+			productReference = A00000000000000000000032 /* SnapClipTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000000000000000000601 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					A00000000000000000000401 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					A00000000000000000000402 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = A00000000000000000000401;
+					};
+				};
+			};
+			buildConfigurationList = A00000000000000000000801 /* Build configuration list for PBXProject "SnapClip" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = zh_CN;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				zh_CN,
+			);
+			mainGroup = A00000000000000000000501;
+			productRefGroup = A00000000000000000000505 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000000000000000000401 /* SnapClip */,
+				A00000000000000000000402 /* SnapClipTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000000000000000000901 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000902 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000000000000000000701 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000108 /* SnapClipApp.swift in Sources */,
+				A00000000000000000000105 /* Models.swift in Sources */,
+				A00000000000000000000101 /* AppModel.swift in Sources */,
+				A00000000000000000000102 /* CaptureService.swift in Sources */,
+				A00000000000000000000109 /* SystemServices.swift in Sources */,
+				A00000000000000000000103 /* HotKeyService.swift in Sources */,
+				A0000000000000000000010A /* SnapClipDesign.swift in Sources */,
+				A00000000000000000000104 /* MenuBarContentView.swift in Sources */,
+				A00000000000000000000106 /* PreferencesView.swift in Sources */,
+				A00000000000000000000107 /* PreviewWindowController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A00000000000000000000702 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000000000000000000115 /* AppModelTests.swift in Sources */,
+				A00000000000000000000111 /* CaptureServiceTests.swift in Sources */,
+				A00000000000000000000112 /* HistoryStoreTests.swift in Sources */,
+				A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */,
+				A00000000000000000000114 /* OCRServiceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A00000000000000000000302 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A00000000000000000000401 /* SnapClip */;
+			targetProxy = A00000000000000000000301 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A00000000000000000000A01 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		A00000000000000000000A02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = arm64;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		A00000000000000000000A11 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 38BDLQYAVJ;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SnapClip/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		A00000000000000000000A12 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 38BDLQYAVJ;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SnapClip/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+		A00000000000000000000A21 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClipTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SnapClip.app/Contents/MacOS/SnapClip";
+			};
+			name = Debug;
+		};
+		A00000000000000000000A22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClipTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SnapClip.app/Contents/MacOS/SnapClip";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000000000000000000801 /* Build configuration list for PBXProject "SnapClip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000A01 /* Debug */,
+				A00000000000000000000A02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000802 /* Build configuration list for PBXNativeTarget "SnapClip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000A11 /* Debug */,
+				A00000000000000000000A12 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000000000000000000803 /* Build configuration list for PBXNativeTarget "SnapClipTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000000000000000000A21 /* Debug */,
+				A00000000000000000000A22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000000000000000000601 /* Project object */;
+}

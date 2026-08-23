@@ -1,0 +1,12 @@
+.DS_Store
+.build/
+.derivedData/
+.derivedData*/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.agents/
+.planning/
+task_plan.md
+findings.md
+progress.md
