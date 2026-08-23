@@ -13,7 +13,14 @@ struct SnapClipApp: App {
     MenuBarExtra {
       MenuBarContentView(model: model)
     } label: {
-      Image(systemName: model.isIconFlashing ? "camera.fill" : "camera")
+      Image("MenuBarScissors")
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 16, height: 16)
+        .opacity(model.isIconFlashing ? 0.42 : 1)
+        .scaleEffect(model.isIconFlashing ? 0.9 : 1)
+        .animation(.easeOut(duration: 0.12), value: model.isIconFlashing)
         .accessibilityLabel("SnapClip")
         .onAppear {
           model.start()

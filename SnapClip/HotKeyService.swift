@@ -559,18 +559,29 @@ final class RecorderView: NSView {
 
     let bounds = bounds.insetBy(dx: 0.5, dy: 0.5)
     let path = NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6)
-    (isRecording
-      ? NSColor.controlAccentColor.withAlphaComponent(0.16) : NSColor.controlBackgroundColor)
-      .setFill()
+    let isDark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+    let fillColor =
+      isRecording
+      ? SnapClipDesign.appKitAccent.withAlphaComponent(isDark ? 0.24 : 0.16)
+      : (isDark ? SnapClipDesign.appKitGraphite : SnapClipDesign.appKitPorcelain)
+    fillColor.setFill()
     path.fill()
-    (isRecording ? NSColor.controlAccentColor : NSColor.separatorColor).setStroke()
+    let strokeColor =
+      isRecording
+      ? SnapClipDesign.appKitAccent
+      : (isDark
+        ? SnapClipDesign.appKitGraphiteHighlight
+        : SnapClipDesign.appKitPorcelainShadow)
+    strokeColor.setStroke()
     path.lineWidth = 1
     path.stroke()
 
     let text = isRecording ? "请按新的快捷键…" : shortcut.displayString
     let attributes: [NSAttributedString.Key: Any] = [
       .font: NSFont.monospacedSystemFont(ofSize: 13, weight: .medium),
-      .foregroundColor: NSColor.labelColor,
+      .foregroundColor: isDark
+        ? SnapClipDesign.appKitPorcelain
+        : SnapClipDesign.appKitGraphiteStrong,
     ]
     let size = text.size(withAttributes: attributes)
     let origin = NSPoint(

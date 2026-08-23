@@ -14,7 +14,7 @@ let package = Package(
     .executableTarget(
       name: "SnapClip",
       path: "SnapClip",
-      exclude: ["Info.plist"],
+      exclude: ["Info.plist", "Assets.xcassets"],
       linkerSettings: [
         .linkedFramework("AppKit"),
         .linkedFramework("ApplicationServices"),

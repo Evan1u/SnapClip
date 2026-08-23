@@ -44,13 +44,15 @@ struct PreferencesView: View {
 
       HStack(spacing: 6) {
         Circle()
-          .fill(model.statusIsError ? Color.red : SnapClipDesign.accent)
+          .fill(model.statusIsError ? SnapClipDesign.accentStrong : SnapClipDesign.accent)
           .frame(width: 6, height: 6)
         Text(model.statusIsError ? "需要处理" : "运行正常")
           .font(SnapClipDesign.metadata)
       }
       .foregroundStyle(
-        model.statusIsError ? Color.red : SnapClipDesign.textSecondary(for: colorScheme)
+        model.statusIsError
+          ? SnapClipDesign.accentStrong
+          : SnapClipDesign.textSecondary(for: colorScheme)
       )
       .padding(.horizontal, SnapClipDesign.spaceSM)
       .frame(minHeight: 30)
@@ -188,14 +190,17 @@ struct PreferencesView: View {
           systemName: model.statusIsError
             ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
         )
-        .foregroundStyle(model.statusIsError ? Color.red : SnapClipDesign.accent)
+        .foregroundStyle(
+          model.statusIsError ? SnapClipDesign.accentStrong : SnapClipDesign.accent
+        )
         .symbolRenderingMode(.hierarchical)
 
         Text(model.statusMessage)
           .font(SnapClipDesign.caption)
           .foregroundStyle(
             model.statusIsError
-              ? Color.red : SnapClipDesign.textSecondary(for: colorScheme)
+              ? SnapClipDesign.accentStrong
+              : SnapClipDesign.textSecondary(for: colorScheme)
           )
           .textSelection(.enabled)
 
@@ -339,7 +344,7 @@ private struct SettingsNotice: View {
   var body: some View {
     HStack(alignment: .top, spacing: SnapClipDesign.spaceS) {
       Image(systemName: "exclamationmark.triangle.fill")
-        .foregroundStyle(.orange)
+        .foregroundStyle(SnapClipDesign.accent)
         .symbolRenderingMode(.hierarchical)
 
       VStack(alignment: .leading, spacing: SnapClipDesign.spaceS) {
@@ -359,7 +364,7 @@ private struct SettingsNotice: View {
       Spacer(minLength: 0)
     }
     .padding(SnapClipDesign.spaceM)
-    .background(Color.orange.opacity(colorScheme == .dark ? 0.1 : 0.06))
+    .background(SnapClipDesign.accentSoft(for: colorScheme))
   }
 }
 
@@ -372,12 +377,12 @@ private struct SnapClipSecondaryButtonStyleForSettings: ButtonStyle {
       .background(
         configuration.isPressed
           ? SnapClipDesign.accentSoft(for: colorScheme)
-          : SnapClipDesign.background(for: colorScheme),
+          : SnapClipDesign.porcelain(for: colorScheme),
         in: RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous)
       )
       .overlay {
         RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous)
-          .stroke(SnapClipDesign.divider(for: colorScheme), lineWidth: 1)
+          .stroke(SnapClipDesign.materialEdge(for: colorScheme), lineWidth: 1)
       }
   }
 }

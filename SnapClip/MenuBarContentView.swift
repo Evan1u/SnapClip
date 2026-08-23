@@ -46,14 +46,15 @@ struct MenuBarContentView: View {
 
         HStack(spacing: 6) {
           Circle()
-            .fill(model.statusIsError ? Color.red : SnapClipDesign.accent)
+            .fill(model.statusIsError ? SnapClipDesign.accentStrong : SnapClipDesign.accent)
             .frame(width: 6, height: 6)
 
           Text(model.statusMessage)
             .font(SnapClipDesign.caption)
             .foregroundStyle(
               model.statusIsError
-                ? Color.red : SnapClipDesign.textSecondary(for: colorScheme)
+                ? SnapClipDesign.accentStrong
+                : SnapClipDesign.textSecondary(for: colorScheme)
             )
             .lineLimit(2)
         }
@@ -222,7 +223,9 @@ private struct CaptureButton: View {
           .padding(.horizontal, SnapClipDesign.spaceS)
           .padding(.vertical, 6)
           .background(
-            showsHoverState ? Color.white.opacity(0.18) : Color.primary.opacity(0.055),
+            showsHoverState
+              ? SnapClipDesign.porcelain.opacity(0.2)
+              : SnapClipDesign.graphite.opacity(0.07),
             in: RoundedRectangle(cornerRadius: 6, style: .continuous)
           )
       }
@@ -254,7 +257,7 @@ private struct PermissionBanner: View {
   var body: some View {
     HStack(alignment: .top, spacing: SnapClipDesign.spaceS) {
       Image(systemName: "exclamationmark.triangle.fill")
-        .foregroundStyle(.orange)
+        .foregroundStyle(SnapClipDesign.accent)
         .symbolRenderingMode(.hierarchical)
 
       VStack(alignment: .leading, spacing: 6) {
@@ -277,12 +280,12 @@ private struct PermissionBanner: View {
     .padding(SnapClipDesign.spaceSM)
     .frame(maxWidth: .infinity, alignment: .leading)
     .background(
-      Color.orange.opacity(colorScheme == .dark ? 0.12 : 0.08),
+      SnapClipDesign.accentSoft(for: colorScheme),
       in: RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous)
     )
     .overlay {
       RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous)
-        .stroke(Color.orange.opacity(0.22), lineWidth: 1)
+        .stroke(SnapClipDesign.accent.opacity(0.36), lineWidth: 1)
     }
   }
 }
@@ -337,9 +340,9 @@ private struct HistoryItemView: View {
           .overlay(alignment: .bottomTrailing) {
             Image(systemName: "doc.on.doc")
               .font(.system(size: 9, weight: .bold))
-              .foregroundStyle(Color.white)
+              .foregroundStyle(SnapClipDesign.porcelain)
               .padding(5)
-              .background(Color.black.opacity(0.55), in: Circle())
+              .background(SnapClipDesign.graphiteStrong.opacity(0.78), in: Circle())
               .padding(5)
           }
       }
@@ -390,7 +393,7 @@ private struct HistoryItemView: View {
         if case .failed(let message) = item.ocrState {
           Text(message)
             .font(SnapClipDesign.caption)
-            .foregroundStyle(.red)
+            .foregroundStyle(SnapClipDesign.accentStrong)
             .multilineTextAlignment(.center)
             .lineLimit(2)
         }
@@ -436,7 +439,7 @@ private struct HistoryThumbnail: View {
           .scaledToFill()
       } else if didDecode {
         Image(systemName: "exclamationmark.triangle")
-          .foregroundStyle(.secondary)
+          .foregroundStyle(SnapClipDesign.accentStrong)
       } else {
         ProgressView()
           .controlSize(.small)
@@ -447,7 +450,7 @@ private struct HistoryThumbnail: View {
     .clipShape(RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous))
     .overlay {
       RoundedRectangle(cornerRadius: SnapClipDesign.radiusS, style: .continuous)
-        .stroke(Color.white.opacity(colorScheme == .dark ? 0.08 : 0.75), lineWidth: 1)
+        .stroke(SnapClipDesign.materialEdge(for: colorScheme), lineWidth: 1)
     }
     .task(id: item.id) {
       image = ThumbnailDecoder.image(from: item.pngData, maximumPixelSize: 224)

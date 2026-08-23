@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import ImageIO
+import QuartzCore
 import VisionKit
 
 struct PreviewAnalysisRequestGate {
@@ -182,8 +183,8 @@ final class PreviewWindowController: NSObject, NSWindowDelegate {
 final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate {
   private let imageView = NSImageView()
   private let overlayView = ImageAnalysisOverlayView()
-  private let statusView = NSVisualEffectView()
-  private let progressIndicator = NSProgressIndicator()
+  private let statusView = NSView()
+  private let progressIndicator = NSImageView()
   private let statusLabel = NSTextField(labelWithString: "")
   private var statusTask: Task<Void, Never>?
 
@@ -236,7 +237,7 @@ final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate
     overlayView.analysis = nil
     imageView.image = nil
     statusView.isHidden = true
-    progressIndicator.stopAnimation(nil)
+    stopProgressAnimation()
   }
 
   func contentView(for overlayView: ImageAnalysisOverlayView) -> NSView? {
@@ -259,6 +260,9 @@ final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate
   }
 
   private func configureViews() {
+    wantsLayer = true
+    layer?.backgroundColor = SnapClipDesign.appKitStudioPaper.cgColor
+
     imageView.imageAlignment = .alignCenter
     imageView.imageScaling = .scaleProportionallyUpOrDown
     imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -270,21 +274,31 @@ final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate
     overlayView.translatesAutoresizingMaskIntoConstraints = false
     overlayView.setAccessibilityLabel("可选择的图片文字")
 
-    statusView.material = .hudWindow
-    statusView.blendingMode = .withinWindow
-    statusView.state = .active
     statusView.wantsLayer = true
     statusView.layer?.cornerRadius = 8
+    statusView.layer?.backgroundColor = SnapClipDesign.appKitGraphiteStrong.cgColor
+    statusView.layer?.borderColor = SnapClipDesign.appKitAccent.withAlphaComponent(0.48).cgColor
+    statusView.layer?.borderWidth = 1
+    statusView.layer?.shadowColor = SnapClipDesign.appKitGraphiteStrong.cgColor
+    statusView.layer?.shadowOpacity = 0.2
+    statusView.layer?.shadowRadius = 5
+    statusView.layer?.shadowOffset = CGSize(width: 0, height: -2)
     statusView.translatesAutoresizingMaskIntoConstraints = false
     statusView.isHidden = true
 
-    progressIndicator.style = .spinning
-    progressIndicator.controlSize = .small
-    progressIndicator.isDisplayedWhenStopped = false
+    let progressConfiguration = NSImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+    progressIndicator.image = NSImage(
+      systemSymbolName: "arrow.triangle.2.circlepath",
+      accessibilityDescription: "正在识别"
+    )?.withSymbolConfiguration(progressConfiguration)
+    progressIndicator.contentTintColor = SnapClipDesign.appKitAccent
+    progressIndicator.imageScaling = .scaleProportionallyDown
+    progressIndicator.wantsLayer = true
+    progressIndicator.isHidden = true
     progressIndicator.translatesAutoresizingMaskIntoConstraints = false
 
     statusLabel.font = .systemFont(ofSize: 12, weight: .medium)
-    statusLabel.textColor = .labelColor
+    statusLabel.textColor = SnapClipDesign.appKitPorcelain
     statusLabel.translatesAutoresizingMaskIntoConstraints = false
 
     addSubview(imageView)
@@ -306,6 +320,8 @@ final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate
       statusView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14),
       progressIndicator.leadingAnchor.constraint(equalTo: statusView.leadingAnchor, constant: 10),
       progressIndicator.centerYAnchor.constraint(equalTo: statusView.centerYAnchor),
+      progressIndicator.widthAnchor.constraint(equalToConstant: 14),
+      progressIndicator.heightAnchor.constraint(equalToConstant: 14),
       statusLabel.leadingAnchor.constraint(equalTo: progressIndicator.trailingAnchor, constant: 7),
       statusLabel.trailingAnchor.constraint(equalTo: statusView.trailingAnchor, constant: -10),
       statusLabel.topAnchor.constraint(equalTo: statusView.topAnchor, constant: 7),
@@ -319,10 +335,25 @@ final class SelectableImagePreviewView: NSView, ImageAnalysisOverlayViewDelegate
     statusLabel.stringValue = message
     statusView.isHidden = false
     if spinning {
-      progressIndicator.startAnimation(nil)
+      startProgressAnimation()
     } else {
-      progressIndicator.stopAnimation(nil)
+      stopProgressAnimation()
     }
+  }
+
+  private func startProgressAnimation() {
+    progressIndicator.isHidden = false
+    let animation = CABasicAnimation(keyPath: "transform.rotation.z")
+    animation.fromValue = 0
+    animation.toValue = CGFloat.pi * 2
+    animation.duration = 0.9
+    animation.repeatCount = .infinity
+    progressIndicator.layer?.add(animation, forKey: "snapclip.rotation")
+  }
+
+  private func stopProgressAnimation() {
+    progressIndicator.layer?.removeAnimation(forKey: "snapclip.rotation")
+    progressIndicator.isHidden = true
   }
 
   private func showTemporaryStatus(_ message: String) {

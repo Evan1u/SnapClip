@@ -17,6 +17,7 @@
 		A00000000000000000000108 /* SnapClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* SnapClipApp.swift */; };
 		A00000000000000000000109 /* SystemServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* SystemServices.swift */; };
 		A0000000000000000000010A /* SnapClipDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* SnapClipDesign.swift */; };
+		A0000000000000000000010B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* Assets.xcassets */; };
 		A00000000000000000000111 /* CaptureServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* CaptureServiceTests.swift */; };
 		A00000000000000000000112 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* HistoryStoreTests.swift */; };
 		A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* HotKeyShortcutTests.swift */; };
@@ -46,6 +47,7 @@
 		A00000000000000000000009 /* SystemServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemServices.swift; sourceTree = "<group>"; };
 		A0000000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0000000000000000000000B /* SnapClipDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipDesign.swift; sourceTree = "<group>"; };
+		A0000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00000000000000000000011 /* CaptureServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureServiceTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000013 /* HotKeyShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyShortcutTests.swift; sourceTree = "<group>"; };
@@ -95,6 +97,7 @@
 				A00000000000000000000009 /* SystemServices.swift */,
 				A00000000000000000000003 /* HotKeyService.swift */,
 				A0000000000000000000000B /* SnapClipDesign.swift */,
+				A0000000000000000000000C /* Assets.xcassets */,
 				A00000000000000000000004 /* MenuBarContentView.swift */,
 				A00000000000000000000006 /* PreferencesView.swift */,
 				A00000000000000000000007 /* PreviewWindowController.swift */,
@@ -215,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0000000000000000000010B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,8 +312,9 @@
 		A00000000000000000000A11 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 38BDLQYAVJ;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -318,7 +323,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
@@ -329,8 +334,9 @@
 		A00000000000000000000A12 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 38BDLQYAVJ;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -339,7 +345,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;

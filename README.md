@@ -8,7 +8,7 @@
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
-  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.0.0"><img alt="Release: v1.0.0" src="https://img.shields.io/badge/Release-v1.0.0-E98673?style=flat-square"></a>
+  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.1.0"><img alt="Release: v1.1.0" src="https://img.shields.io/badge/Release-v1.1.0-E96548?style=flat-square"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
 </p>
 
@@ -46,7 +46,7 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
   </tr>
 </table>
 
-界面采用暖象牙、暖灰与珊瑚色的“暗房工作台”视觉，支持 macOS 浅色和深色模式。完整视觉规范见 [docs/brand-spec.md](docs/brand-spec.md)。
+界面从圆润的拟物剪刀图标提取石墨、瓷白与珊瑚配色，支持 macOS 浅色和深色模式。完整视觉规范见 [docs/brand-spec.md](docs/brand-spec.md)。
 
 ## 功能
 
@@ -61,12 +61,12 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 
 ## 下载
 
-[下载 SnapClip v1.0.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.dmg)
+[下载 SnapClip v1.1.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.1.0/SnapClip-v1.1.0-arm64.dmg)
 
 - 系统要求：Apple Silicon Mac、macOS 14 或更高版本。
-- 推荐安装包：`SnapClip-v1.0.0-arm64.dmg`，约 556 KiB。
-- DMG SHA-256：`90c296bf956ed113d5f37a122a49e4d07df06e1c6c3cc8c2a83668d3a6b19ef2`
-- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.zip)，SHA-256：`69df2fff04ec8745666ab87bd5a756631d42b86182cd1421b611a58ee81ed5a7`
+- 推荐安装包：`SnapClip-v1.1.0-arm64.dmg`，约 2.1 MiB。
+- DMG SHA-256：`8e85b499c741c36835f7650573f2c7869c2c0d1bdeb0a3c42c601dca3c6186ed`
+- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.1.0/SnapClip-v1.1.0-arm64.zip)，SHA-256：`99566d20699a3f0cac1df2386460b703fb33589cd9ad5bfcf4558f3ef260c2ab`
 
 ### 安装
 
@@ -74,7 +74,7 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 2. 首次尝试打开后，如果 macOS 阻止运行，请前往 **系统设置 → 隐私与安全性**，在安全提示处选择 **仍要打开**。
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
-> `v1.0.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
+> `v1.1.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
 
 ### 从源码运行
 

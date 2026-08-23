@@ -1,9 +1,32 @@
+import AppKit
 import Foundation
 import SwiftUI
 
 enum SnapClipDesign {
-  static let accent = Color(hex: "D56547")
-  static let accentStrong = Color(hex: "B84F35")
+  // The complete UI palette comes from the scissors mark: coral pivot,
+  // graphite blades, porcelain handles, and warm studio paper.
+  static let accent = Color(hex: "E96548")
+  static let accentStrong = Color(hex: "C84D36")
+  static let graphite = Color(hex: "555452")
+  static let graphiteStrong = Color(hex: "363635")
+  static let graphiteHighlight = Color(hex: "6B6A67")
+  static let porcelain = Color(hex: "E9E6DF")
+  static let porcelainShadow = Color(hex: "C8C4BC")
+  static let studioPaper = Color(hex: "F3F1ED")
+  static let studioPaperRaised = Color(hex: "FCFBF8")
+
+  static let appKitAccent = NSColor(srgbRed: 233 / 255, green: 101 / 255, blue: 72 / 255, alpha: 1)
+  static let appKitGraphite = NSColor(srgbRed: 85 / 255, green: 84 / 255, blue: 82 / 255, alpha: 1)
+  static let appKitGraphiteStrong = NSColor(
+    srgbRed: 54 / 255, green: 54 / 255, blue: 53 / 255, alpha: 1)
+  static let appKitGraphiteHighlight = NSColor(
+    srgbRed: 107 / 255, green: 106 / 255, blue: 103 / 255, alpha: 1)
+  static let appKitPorcelain = NSColor(
+    srgbRed: 233 / 255, green: 230 / 255, blue: 223 / 255, alpha: 1)
+  static let appKitPorcelainShadow = NSColor(
+    srgbRed: 200 / 255, green: 196 / 255, blue: 188 / 255, alpha: 1)
+  static let appKitStudioPaper = NSColor(
+    srgbRed: 243 / 255, green: 241 / 255, blue: 237 / 255, alpha: 1)
 
   static let spaceXS: CGFloat = 4
   static let spaceS: CGFloat = 8
@@ -24,31 +47,43 @@ enum SnapClipDesign {
   static let metadata = Font.system(size: 10, weight: .semibold, design: .monospaced)
 
   static func background(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "211F1D") : Color(hex: "F7F3EF")
+    scheme == .dark ? graphiteStrong : studioPaper
   }
 
   static func surface(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "2D2A27") : Color(hex: "FFFDFB")
+    scheme == .dark ? graphite : studioPaperRaised
   }
 
   static func surfaceRaised(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "35302D") : Color(hex: "FFFFFF")
+    scheme == .dark ? graphiteHighlight : studioPaperRaised
+  }
+
+  static func porcelain(for scheme: ColorScheme) -> Color {
+    scheme == .dark ? graphite : porcelain
+  }
+
+  static func graphiteSurface(for scheme: ColorScheme) -> Color {
+    scheme == .dark ? graphiteStrong : graphite
   }
 
   static func accentSoft(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "593326") : Color(hex: "F5DDD5")
+    scheme == .dark ? accent.opacity(0.22) : accent.opacity(0.16)
   }
 
   static func textPrimary(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "F4EFEB") : Color(hex: "28231F")
+    scheme == .dark ? porcelain : graphiteStrong
   }
 
   static func textSecondary(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "B4AAA4") : Color(hex: "746B65")
+    scheme == .dark ? porcelainShadow : graphite
   }
 
   static func divider(for scheme: ColorScheme) -> Color {
-    scheme == .dark ? Color(hex: "443F3A") : Color(hex: "E3DAD3")
+    scheme == .dark ? graphiteHighlight : porcelainShadow
+  }
+
+  static func materialEdge(for scheme: ColorScheme) -> Color {
+    scheme == .dark ? porcelain.opacity(0.14) : porcelainShadow
   }
 }
 
@@ -103,15 +138,16 @@ struct SnapClipMark: View {
   var size: CGFloat = 36
 
   var body: some View {
-    Image(systemName: "camera.viewfinder")
-      .font(.system(size: size * 0.45, weight: .semibold))
-      .symbolRenderingMode(.hierarchical)
-      .foregroundStyle(SnapClipDesign.accent)
+    Image("BrandScissors")
+      .resizable()
+      .scaledToFill()
       .frame(width: size, height: size)
-      .background(
-        SnapClipDesign.accentSoft(for: colorScheme),
-        in: RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-      )
+      .clipShape(RoundedRectangle(cornerRadius: size * 0.25, style: .continuous))
+      .overlay {
+        RoundedRectangle(cornerRadius: size * 0.25, style: .continuous)
+          .stroke(SnapClipDesign.materialEdge(for: colorScheme), lineWidth: 1)
+      }
+      .shadow(color: SnapClipDesign.graphiteStrong.opacity(0.16), radius: 4, y: 2)
       .accessibilityHidden(true)
   }
 }
@@ -126,7 +162,11 @@ struct SnapClipSectionLabel: View {
     Label(title.uppercased(), systemImage: systemImage)
       .font(SnapClipDesign.metadata)
       .tracking(0.7)
-      .foregroundStyle(SnapClipDesign.textSecondary(for: colorScheme))
+      .foregroundStyle(
+        colorScheme == .dark
+          ? SnapClipDesign.textSecondary(for: colorScheme)
+          : SnapClipDesign.graphite
+      )
   }
 }
 
@@ -160,7 +200,7 @@ struct SnapClipCaptureButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .foregroundStyle(
-        isHovered ? Color.white : SnapClipDesign.textPrimary(for: colorScheme)
+        isHovered ? SnapClipDesign.porcelain : SnapClipDesign.textPrimary(for: colorScheme)
       )
       .background(
         backgroundColor(isPressed: configuration.isPressed),
@@ -170,28 +210,30 @@ struct SnapClipCaptureButtonStyle: ButtonStyle {
         RoundedRectangle(cornerRadius: SnapClipDesign.radiusM, style: .continuous)
           .stroke(
             isHovered
-              ? SnapClipDesign.accentStrong.opacity(0.55)
-              : SnapClipDesign.divider(for: colorScheme),
+              ? SnapClipDesign.accent.opacity(0.82)
+              : SnapClipDesign.materialEdge(for: colorScheme),
             lineWidth: 1
           )
       }
       .shadow(
         color: isHovered
-          ? SnapClipDesign.accent.opacity(configuration.isPressed ? 0.08 : 0.2)
-          : Color.clear,
-        radius: isHovered && !configuration.isPressed ? 7 : 2,
-        y: isHovered && !configuration.isPressed ? 3 : 1
+          ? SnapClipDesign.graphiteStrong.opacity(configuration.isPressed ? 0.16 : 0.26)
+          : SnapClipDesign.graphiteStrong.opacity(colorScheme == .dark ? 0.12 : 0.05),
+        radius: isHovered && !configuration.isPressed ? 8 : 3,
+        y: isHovered && !configuration.isPressed ? 4 : 1
       )
       .scaleEffect(configuration.isPressed ? 0.99 : 1)
   }
 
   private func backgroundColor(isPressed: Bool) -> Color {
     if isHovered {
-      return isPressed ? SnapClipDesign.accentStrong : SnapClipDesign.accent
+      return isPressed
+        ? SnapClipDesign.graphiteStrong
+        : SnapClipDesign.graphiteSurface(for: colorScheme)
     }
     return isPressed
       ? SnapClipDesign.accentSoft(for: colorScheme)
-      : SnapClipDesign.surface(for: colorScheme)
+      : SnapClipDesign.porcelain(for: colorScheme)
   }
 }
 
@@ -207,9 +249,13 @@ struct SnapClipCompactButtonStyle: ButtonStyle {
       .background(
         configuration.isPressed
           ? SnapClipDesign.accentSoft(for: colorScheme)
-          : SnapClipDesign.background(for: colorScheme),
+          : SnapClipDesign.porcelain(for: colorScheme),
         in: RoundedRectangle(cornerRadius: 7, style: .continuous)
       )
+      .overlay {
+        RoundedRectangle(cornerRadius: 7, style: .continuous)
+          .stroke(SnapClipDesign.materialEdge(for: colorScheme), lineWidth: 0.75)
+      }
   }
 }
 
@@ -231,15 +277,17 @@ struct SnapClipSurfaceModifier: ViewModifier {
         RoundedRectangle(cornerRadius: radius, style: .continuous)
           .stroke(
             isHovered
-              ? SnapClipDesign.accent.opacity(0.6)
-              : SnapClipDesign.divider(for: colorScheme),
+              ? SnapClipDesign.graphite.opacity(colorScheme == .dark ? 0.95 : 0.68)
+              : SnapClipDesign.materialEdge(for: colorScheme),
             lineWidth: isHovered ? 1.5 : 1
           )
       }
       .shadow(
-        color: isHovered ? SnapClipDesign.accent.opacity(0.1) : Color.clear,
-        radius: isHovered ? 5 : 0,
-        y: isHovered ? 2 : 0
+        color: isHovered
+          ? SnapClipDesign.graphiteStrong.opacity(0.16)
+          : SnapClipDesign.graphiteStrong.opacity(0.035),
+        radius: isHovered ? 6 : 2,
+        y: isHovered ? 3 : 1
       )
   }
 }
