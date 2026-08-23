@@ -61,15 +61,16 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 
 ## 下载
 
-[下载 SnapClip v1.0.0（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.zip)
+[下载 SnapClip v1.0.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.dmg)
 
 - 系统要求：Apple Silicon Mac、macOS 14 或更高版本。
-- 文件：`SnapClip-v1.0.0-arm64.zip`，约 322 KiB。
-- SHA-256：`69df2fff04ec8745666ab87bd5a756631d42b86182cd1421b611a58ee81ed5a7`
+- 推荐安装包：`SnapClip-v1.0.0-arm64.dmg`，约 556 KiB。
+- DMG SHA-256：`90c296bf956ed113d5f37a122a49e4d07df06e1c6c3cc8c2a83668d3a6b19ef2`
+- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.0.0/SnapClip-v1.0.0-arm64.zip)，SHA-256：`69df2fff04ec8745666ab87bd5a756631d42b86182cd1421b611a58ee81ed5a7`
 
 ### 安装
 
-1. 解压 ZIP，把 `SnapClip.app` 移到 `/Applications`。
+1. 打开 DMG，把 `SnapClip.app` 拖到其中的 `Applications` 图标。
 2. 首次尝试打开后，如果 macOS 阻止运行，请前往 **系统设置 → 隐私与安全性**，在安全提示处选择 **仍要打开**。
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
