@@ -109,13 +109,13 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
       <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.dmg">
         <strong>DMG</strong><br><sub>SnapClip-v1.3.0-arm64.dmg · 2.7 MiB</sub>
       </a><br>
-      <sub><code>526caf841a2406e4d482e771d1ee4e6233540ba100ca643cddea52deeb34b050</code></sub>
+      <sub><code>c42c7e41e0e997915107d759f47ef74fa3c68575521d993686665d7815c64377</code></sub>
     </td>
     <td align="center">
       <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.zip">
         <strong>ZIP</strong><br><sub>SnapClip-v1.3.0-arm64.zip · 2.3 MiB</sub>
       </a><br>
-      <sub><code>9afebed3dec00552822ebc8f88c48fae8a5122554d259cf824c1d6d725e248a7</code></sub>
+      <sub><code>5ab001d8501715b3398c519620c8567e5b56471cb73b8bf4e1852e070d1ad411</code></sub>
     </td>
   </tr>
 </table>
@@ -131,7 +131,7 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
 <details>
 <summary><strong>关于 v1.3.0 的签名</strong></summary>
 
-`v1.3.0` 是未公证的 Pre-release。公开下载包使用 ad-hoc 签名，避免在二进制中包含维护者证书；Gatekeeper 会把它视为未验证应用，后续系统更新也可能要求重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
+`v1.3.0` 是未公证的 Pre-release。当前公开下载包使用维护者的 Apple Development Team 签名，与本机个人授权身份一致；Gatekeeper 仍可能要求“仍要打开”。如果你需要面向其他设备的稳定签名、登录启动或更高信任级别，请从源码构建并选择自己的 Developer ID 或 Personal Team。
 
 </details>
 
