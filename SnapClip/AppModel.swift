@@ -16,6 +16,7 @@ final class AppModel: ObservableObject {
   let history: HistoryStore
 
   @Published private(set) var isCapturing = false
+  @Published private(set) var isEditing = false
   @Published private(set) var isIconFlashing = false
   @Published private(set) var statusMessage = "就绪"
   @Published private(set) var statusIsError = false
@@ -32,10 +33,10 @@ final class AppModel: ObservableObject {
   private let captureService: any CaptureServing
   private let clipboardService: any ClipboardServing
   private let desktopExportService: any DesktopExportServing
-  private let ocrService: any OCRServing
   private let permissionService: any ScreenCapturePermissionServing
   private let loginItemService: any LoginItemServing
-  private let previewController: PreviewWindowController
+  private let editorController: any ScreenshotEditing
+  private let ocrGate: OCRExecutionGate
   private let userDefaults: UserDefaults
   private let hotKeyServiceFactory: @MainActor () throws -> any HotKeyServing
   private var hotKeyService: (any HotKeyServing)?
@@ -54,7 +55,8 @@ final class AppModel: ObservableObject {
     ocrService: any OCRServing = VisionOCRService(),
     permissionService: any ScreenCapturePermissionServing = ScreenCapturePermissionService(),
     loginItemService: any LoginItemServing = LoginItemService(),
-    previewController: PreviewWindowController = PreviewWindowController(),
+    editorController: any ScreenshotEditing = EditorWindowController(),
+    ocrGate: OCRExecutionGate? = nil,
     userDefaults: UserDefaults = .standard,
     hotKeyServiceFactory: @escaping @MainActor () throws -> any HotKeyServing = {
       try HotKeyService()
@@ -64,10 +66,10 @@ final class AppModel: ObservableObject {
     self.captureService = captureService
     self.clipboardService = clipboardService
     self.desktopExportService = desktopExportService
-    self.ocrService = ocrService
     self.permissionService = permissionService
     self.loginItemService = loginItemService
-    self.previewController = previewController
+    self.editorController = editorController
+    self.ocrGate = ocrGate ?? OCRExecutionGate(ocrService: ocrService)
     self.userDefaults = userDefaults
     self.hotKeyServiceFactory = hotKeyServiceFactory
 
@@ -114,6 +116,7 @@ final class AppModel: ObservableObject {
     } else {
       self.soundEnabled = userDefaults.bool(forKey: PreferenceKey.soundEnabled)
     }
+    editorController.sessionDelegate = self
   }
 
   func start() {
@@ -173,13 +176,14 @@ final class AppModel: ObservableObject {
 
         switch outcome {
         case .captured(let data):
-          guard clipboardService.copyImage(pngData: data) else {
-            showError("截图成功，但无法写入剪贴板。")
-            return
+          do {
+            try editorController.presentNewCapture(
+              pngData: data,
+              capturedAt: Date()
+            )
+          } catch {
+            showError(error.localizedDescription)
           }
-          history.insert(pngData: data)
-          flashMenuBarIcon()
-          showFeedback("已复制截图")
         case .cancelled:
           showFeedback("已取消截图", duration: .milliseconds(800))
         }
@@ -199,10 +203,7 @@ final class AppModel: ObservableObject {
 
   func openPreview(_ item: ScreenshotItem) {
     do {
-      try previewController.show(
-        pngData: item.pngData,
-        title: "SnapClip · \(item.capturedAt.formatted(date: .omitted, time: .shortened))"
-      )
+      try editorController.presentHistoryItem(item)
     } catch {
       showError(error.localizedDescription)
     }
@@ -251,10 +252,18 @@ final class AppModel: ObservableObject {
       return
     }
     guard item.ocrState != .recognizing else { return }
+    let expectedRevision = item.imageRevision
     recognizingItemID = item.id
-    history.markRecognizing(id: item.id)
+    guard history.markRecognizing(
+      id: item.id,
+      expectedImageRevision: expectedRevision
+    ) else {
+      recognizingItemID = nil
+      return
+    }
     statusMessage = "正在识别文字…"
     statusIsError = false
+    let requestID = UUID()
 
     ocrTask = Task { [weak self] in
       guard let self else { return }
@@ -264,11 +273,18 @@ final class AppModel: ObservableObject {
       }
 
       do {
-        let text = try await ocrService.recognizeText(in: item.pngData)
+        let text = try await ocrGate.recognize(
+          requestID: requestID,
+          pngData: item.pngData
+        )
         guard history.item(id: item.id) != nil else {
           return
         }
-        history.storeRecognizedText(text, id: item.id)
+        history.storeRecognizedText(
+          text,
+          id: item.id,
+          expectedImageRevision: expectedRevision
+        )
         copyTextAndReport(text)
       } catch is CancellationError {
         return
@@ -276,7 +292,11 @@ final class AppModel: ObservableObject {
         guard history.item(id: item.id) != nil else {
           return
         }
-        history.markOCRFailed(error.localizedDescription, id: item.id)
+        history.markOCRFailed(
+          error.localizedDescription,
+          id: item.id,
+          expectedImageRevision: expectedRevision
+        )
         showError(error.localizedDescription)
       }
     }
@@ -436,6 +456,7 @@ final class AppModel: ObservableObject {
     exportTask?.cancel()
     feedbackTask?.cancel()
     iconTask?.cancel()
+    editorController.shutdown()
     hotKeyService?.stop()
     hotKeyService = nil
   }
@@ -513,5 +534,53 @@ final class AppModel: ObservableObject {
       return fallback
     }
     return shortcut
+  }
+}
+
+extension AppModel: EditorSessionDelegate {
+  func editorDidBeginSession() {
+    isEditing = true
+    statusMessage = "正在编辑截图"
+    statusIsError = false
+    canOpenPermissionSettings = false
+  }
+
+  func editorDidCancelSession() {
+    guard isEditing else { return }
+    isEditing = false
+    showFeedback("已取消截图编辑")
+  }
+
+  func editorDidRequestCommit(_ output: EditorOutput) -> EditorCommitResult {
+    switch output.target {
+    case .newCapture(let capturedAt):
+      guard clipboardService.copyImage(pngData: output.pngData) else {
+        return .rejected(message: "截图成功，但无法写入剪贴板。")
+      }
+      history.insert(pngData: output.pngData, capturedAt: capturedAt)
+      flashMenuBarIcon()
+      isEditing = false
+      showFeedback("已复制截图")
+      return .accepted
+    case .historyItem(let id, _, let sourceRevision):
+      guard let item = history.item(id: id), item.imageRevision == sourceRevision else {
+        return .rejected(message: "原历史截图已不存在。")
+      }
+      guard clipboardService.copyImage(pngData: output.pngData) else {
+        return .rejected(message: "截图成功，但无法写入剪贴板。")
+      }
+      guard history.commitEditorOutput(
+        id: id,
+        expectedImageRevision: sourceRevision,
+        pngData: output.pngData,
+        contentChanged: output.contentChanged,
+        ocrCache: output.ocrCache
+      ) else {
+        return .rejected(message: "原历史截图已不存在。")
+      }
+      isEditing = false
+      showFeedback("已复制并更新截图")
+      return .accepted
+    }
   }
 }

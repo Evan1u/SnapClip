@@ -38,7 +38,8 @@ enum OCRState: Equatable, Sendable {
 struct ScreenshotItem: Identifiable, Equatable, Sendable {
   let id: UUID
   let capturedAt: Date
-  let pngData: Data
+  var pngData: Data
+  var imageRevision: UInt64
   var recognizedText: String?
   var ocrState: OCRState
 
@@ -46,12 +47,14 @@ struct ScreenshotItem: Identifiable, Equatable, Sendable {
     id: UUID = UUID(),
     capturedAt: Date = Date(),
     pngData: Data,
+    imageRevision: UInt64 = 0,
     recognizedText: String? = nil,
     ocrState: OCRState = .idle
   ) {
     self.id = id
     self.capturedAt = capturedAt
     self.pngData = pngData
+    self.imageRevision = imageRevision
     self.recognizedText = recognizedText
     self.ocrState = ocrState
   }
@@ -103,6 +106,89 @@ final class HistoryStore: ObservableObject {
     update(id: id) { item in
       item.ocrState = .failed(message)
     }
+  }
+
+  @discardableResult
+  func commitEditorOutput(
+    id: UUID,
+    expectedImageRevision: UInt64,
+    pngData: Data,
+    contentChanged: Bool,
+    ocrCache: OCRCacheDisposition
+  ) -> Bool {
+    guard let index = items.firstIndex(where: { $0.id == id }) else {
+      return false
+    }
+    guard items[index].imageRevision == expectedImageRevision else {
+      return false
+    }
+
+    switch ocrCache {
+    case .preserve:
+      guard !contentChanged else { return false }
+    case .clear:
+      items[index].recognizedText = nil
+      items[index].ocrState = .idle
+    case .replace(let text):
+      let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !trimmed.isEmpty else { return false }
+      items[index].recognizedText = trimmed
+      items[index].ocrState = .completed
+    }
+
+    if contentChanged {
+      items[index].pngData = pngData
+      items[index].imageRevision &+= 1
+    }
+    return true
+  }
+
+  @discardableResult
+  func markRecognizing(
+    id: UUID,
+    expectedImageRevision: UInt64
+  ) -> Bool {
+    guard let index = items.firstIndex(where: { $0.id == id }) else {
+      return false
+    }
+    guard items[index].imageRevision == expectedImageRevision else {
+      return false
+    }
+    items[index].ocrState = .recognizing
+    return true
+  }
+
+  @discardableResult
+  func storeRecognizedText(
+    _ text: String,
+    id: UUID,
+    expectedImageRevision: UInt64
+  ) -> Bool {
+    guard let index = items.firstIndex(where: { $0.id == id }) else {
+      return false
+    }
+    guard items[index].imageRevision == expectedImageRevision else {
+      return false
+    }
+    items[index].recognizedText = text
+    items[index].ocrState = .completed
+    return true
+  }
+
+  @discardableResult
+  func markOCRFailed(
+    _ message: String,
+    id: UUID,
+    expectedImageRevision: UInt64
+  ) -> Bool {
+    guard let index = items.firstIndex(where: { $0.id == id }) else {
+      return false
+    }
+    guard items[index].imageRevision == expectedImageRevision else {
+      return false
+    }
+    items[index].ocrState = .failed(message)
+    return true
   }
 
   func clear() {

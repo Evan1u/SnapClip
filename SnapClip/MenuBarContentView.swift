@@ -136,6 +136,7 @@ struct MenuBarContentView: View {
             Label("清空", systemImage: "trash")
               .labelStyle(.titleAndIcon)
           }
+          .disabled(model.isEditing)
           .buttonStyle(.plain)
           .font(SnapClipDesign.caption.weight(.semibold))
           .foregroundStyle(SnapClipDesign.textSecondary(for: colorScheme))
@@ -364,7 +365,7 @@ private struct HistoryItemView: View {
           Button {
             model.openPreview(item)
           } label: {
-            Label("打开", systemImage: "arrow.up.forward.app")
+            Label("编辑", systemImage: "pencil")
           }
           .buttonStyle(SnapClipCompactButtonStyle())
 
@@ -375,7 +376,8 @@ private struct HistoryItemView: View {
           }
           .buttonStyle(SnapClipCompactButtonStyle())
           .disabled(
-            item.ocrState == .recognizing
+            model.isEditing
+              || item.ocrState == .recognizing
               || (model.recognizingItemID != nil && item.recognizedText == nil)
           )
 

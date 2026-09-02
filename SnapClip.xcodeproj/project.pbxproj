@@ -13,16 +13,27 @@
 		A00000000000000000000104 /* MenuBarContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* MenuBarContentView.swift */; };
 		A00000000000000000000105 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* Models.swift */; };
 		A00000000000000000000106 /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000006 /* PreferencesView.swift */; };
-		A00000000000000000000107 /* PreviewWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000007 /* PreviewWindowController.swift */; };
 		A00000000000000000000108 /* SnapClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000008 /* SnapClipApp.swift */; };
 		A00000000000000000000109 /* SystemServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* SystemServices.swift */; };
 		A0000000000000000000010A /* SnapClipDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* SnapClipDesign.swift */; };
 		A0000000000000000000010B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* Assets.xcassets */; };
 		A00000000000000000000111 /* CaptureServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* CaptureServiceTests.swift */; };
 		A00000000000000000000112 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* HistoryStoreTests.swift */; };
+		A0000000000000000000010E /* EditorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000D /* EditorModels.swift */; };
 		A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* HotKeyShortcutTests.swift */; };
 		A00000000000000000000114 /* OCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000014 /* OCRServiceTests.swift */; };
 		A00000000000000000000115 /* AppModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000015 /* AppModelTests.swift */; };
+		A00000000000000000000116 /* EditorModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000016 /* EditorModelsTests.swift */; };
+		A0000000000000000000010F /* ScreenshotRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000E /* ScreenshotRenderer.swift */; };
+		A00000000000000000000110 /* EditorCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000F /* EditorCanvasView.swift */; };
+		A00000000000000000000118 /* EditorToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000010 /* EditorToolbarView.swift */; };
+		B1000000000000000000000001 /* OCRExecutionGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A1 /* OCRExecutionGate.swift */; };
+		B2000000000000000000000001 /* EditorWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A1 /* EditorWindowController.swift */; };
+		B3000000000000000000000001 /* LiveTextAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3000000000000000000000A1 /* LiveTextAnalysis.swift */; };
+		B4000000000000000000000001 /* EditorOCRSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4000000000000000000000A1 /* EditorOCRSelectionView.swift */; };
+		A00000000000000000000117 /* ScreenshotRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000017 /* ScreenshotRendererTests.swift */; };
+		B5000000000000000000000001 /* OCRExecutionGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000000A1 /* OCRExecutionGateTests.swift */; };
+		B6000000000000000000000001 /* ColorPanelCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000A1 /* ColorPanelCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,17 +53,28 @@
 		A00000000000000000000004 /* MenuBarContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000005 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		A00000000000000000000006 /* PreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
-		A00000000000000000000007 /* PreviewWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewWindowController.swift; sourceTree = "<group>"; };
 		A00000000000000000000008 /* SnapClipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipApp.swift; sourceTree = "<group>"; };
 		A00000000000000000000009 /* SystemServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemServices.swift; sourceTree = "<group>"; };
 		A0000000000000000000000A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A0000000000000000000000B /* SnapClipDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipDesign.swift; sourceTree = "<group>"; };
 		A0000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A0000000000000000000000D /* EditorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModels.swift; sourceTree = "<group>"; };
 		A00000000000000000000011 /* CaptureServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureServiceTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000013 /* HotKeyShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyShortcutTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000014 /* OCRServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000015 /* AppModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelTests.swift; sourceTree = "<group>"; };
+		A00000000000000000000016 /* EditorModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModelsTests.swift; sourceTree = "<group>"; };
+		A0000000000000000000000E /* ScreenshotRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotRenderer.swift; sourceTree = "<group>"; };
+		A0000000000000000000000F /* EditorCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorCanvasView.swift; sourceTree = "<group>"; };
+		A00000000000000000000010 /* EditorToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbarView.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A1 /* OCRExecutionGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExecutionGate.swift; sourceTree = "<group>"; };
+		B2000000000000000000000A1 /* EditorWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindowController.swift; sourceTree = "<group>"; };
+		B3000000000000000000000A1 /* LiveTextAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTextAnalysis.swift; sourceTree = "<group>"; };
+		B4000000000000000000000A1 /* EditorOCRSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorOCRSelectionView.swift; sourceTree = "<group>"; };
+		A00000000000000000000017 /* ScreenshotRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotRendererTests.swift; sourceTree = "<group>"; };
+		B50000000000000000000000A1 /* OCRExecutionGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExecutionGateTests.swift; sourceTree = "<group>"; };
+		B6000000000000000000000A1 /* ColorPanelCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPanelCoordinator.swift; sourceTree = "<group>"; };
 		A00000000000000000000021 /* PRD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD.md; sourceTree = "<group>"; };
 		A00000000000000000000022 /* brand-spec.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "brand-spec.md"; sourceTree = "<group>"; };
 		A00000000000000000000031 /* SnapClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,7 +122,15 @@
 				A0000000000000000000000C /* Assets.xcassets */,
 				A00000000000000000000004 /* MenuBarContentView.swift */,
 				A00000000000000000000006 /* PreferencesView.swift */,
-				A00000000000000000000007 /* PreviewWindowController.swift */,
+				A0000000000000000000000D /* EditorModels.swift */,
+				A0000000000000000000000E /* ScreenshotRenderer.swift */,
+				A0000000000000000000000F /* EditorCanvasView.swift */,
+				A00000000000000000000010 /* EditorToolbarView.swift */,
+				B1000000000000000000000A1 /* OCRExecutionGate.swift */,
+				B2000000000000000000000A1 /* EditorWindowController.swift */,
+				B3000000000000000000000A1 /* LiveTextAnalysis.swift */,
+				B4000000000000000000000A1 /* EditorOCRSelectionView.swift */,
+				B6000000000000000000000A1 /* ColorPanelCoordinator.swift */,
 				A0000000000000000000000A /* Info.plist */,
 			);
 			path = SnapClip;
@@ -114,6 +144,9 @@
 				A00000000000000000000012 /* HistoryStoreTests.swift */,
 				A00000000000000000000013 /* HotKeyShortcutTests.swift */,
 				A00000000000000000000014 /* OCRServiceTests.swift */,
+				A00000000000000000000016 /* EditorModelsTests.swift */,
+				A00000000000000000000017 /* ScreenshotRendererTests.swift */,
+				B50000000000000000000000A1 /* OCRExecutionGateTests.swift */,
 			);
 			path = SnapClipTests;
 			sourceTree = "<group>";
@@ -245,7 +278,15 @@
 				A0000000000000000000010A /* SnapClipDesign.swift in Sources */,
 				A00000000000000000000104 /* MenuBarContentView.swift in Sources */,
 				A00000000000000000000106 /* PreferencesView.swift in Sources */,
-				A00000000000000000000107 /* PreviewWindowController.swift in Sources */,
+				A0000000000000000000010E /* EditorModels.swift in Sources */,
+				A0000000000000000000010F /* ScreenshotRenderer.swift in Sources */,
+				A00000000000000000000110 /* EditorCanvasView.swift in Sources */,
+				A00000000000000000000118 /* EditorToolbarView.swift in Sources */,
+				B1000000000000000000000001 /* OCRExecutionGate.swift in Sources */,
+				B2000000000000000000000001 /* EditorWindowController.swift in Sources */,
+				B3000000000000000000000001 /* LiveTextAnalysis.swift in Sources */,
+				B4000000000000000000000001 /* EditorOCRSelectionView.swift in Sources */,
+				B6000000000000000000000001 /* ColorPanelCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,6 +299,9 @@
 				A00000000000000000000112 /* HistoryStoreTests.swift in Sources */,
 				A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */,
 				A00000000000000000000114 /* OCRServiceTests.swift in Sources */,
+				A00000000000000000000116 /* EditorModelsTests.swift in Sources */,
+				A00000000000000000000117 /* ScreenshotRendererTests.swift in Sources */,
+				B5000000000000000000000001 /* OCRExecutionGateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

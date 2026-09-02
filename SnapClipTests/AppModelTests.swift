@@ -34,6 +34,32 @@ private struct StubOCRService: OCRServing {
   }
 }
 
+@MainActor
+private final class StubEditorController: ScreenshotEditing {
+  var sessionDelegate: EditorSessionDelegate?
+  private(set) var isPresenting = false
+  private(set) var presentedCapture: (pngData: Data, capturedAt: Date)?
+
+  func presentNewCapture(pngData: Data, capturedAt: Date) throws {
+    presentedCapture = (pngData, capturedAt)
+    isPresenting = true
+    sessionDelegate?.editorDidBeginSession()
+  }
+
+  func presentHistoryItem(_ item: ScreenshotItem) throws {
+    isPresenting = true
+    sessionDelegate?.editorDidBeginSession()
+  }
+
+  func discardActiveSession() {
+    isPresenting = false
+    sessionDelegate?.editorDidCancelSession()
+  }
+
+  func focus() {}
+  func shutdown() {}
+}
+
 private struct StubDesktopExportService: DesktopExportServing {
   let destination: URL
   var error: DesktopExportError?
@@ -93,14 +119,41 @@ final class AppModelTests: XCTestCase {
   func testSuccessfulCaptureCopiesBeforeAddingToHistory() async {
     let data = Data([1, 2, 3])
     let clipboard = StubClipboardService()
+    let editor = StubEditorController()
     let model = makeModel(
       outcome: .captured(data),
-      clipboard: clipboard
+      clipboard: clipboard,
+      editor: editor
     )
 
     model.capture(.mainDisplay)
     await waitForCaptureToFinish(model)
 
+    XCTAssertEqual(editor.presentedCapture?.pngData, data)
+    XCTAssertTrue(clipboard.copiedImages.isEmpty)
+    XCTAssertTrue(model.history.items.isEmpty)
+    XCTAssertTrue(model.isEditing)
+  }
+
+  func testNewCaptureCommitCopiesBeforeAddingToHistory() async {
+    let data = Data([1, 2, 3])
+    let clipboard = StubClipboardService()
+    let model = makeModel(
+      outcome: .cancelled,
+      clipboard: clipboard
+    )
+    let capturedAt = Date(timeIntervalSince1970: 100)
+
+    let result = model.editorDidRequestCommit(
+      EditorOutput(
+        target: .newCapture(capturedAt: capturedAt),
+        pngData: data,
+        contentChanged: true,
+        ocrCache: .clear
+      )
+    )
+
+    XCTAssertEqual(result, .accepted)
     XCTAssertEqual(clipboard.copiedImages, [data])
     XCTAssertEqual(model.history.items.map(\.pngData), [data])
   }
@@ -113,11 +166,17 @@ final class AppModelTests: XCTestCase {
       clipboard: clipboard
     )
 
-    model.capture(.interactive)
-    await waitForCaptureToFinish(model)
+    let result = model.editorDidRequestCommit(
+      EditorOutput(
+        target: .newCapture(capturedAt: Date()),
+        pngData: Data([7]),
+        contentChanged: true,
+        ocrCache: .clear
+      )
+    )
 
+    XCTAssertEqual(result, .rejected(message: "截图成功，但无法写入剪贴板。"))
     XCTAssertTrue(model.history.items.isEmpty)
-    XCTAssertTrue(model.statusIsError)
   }
 
   func testDesktopExportUsesReadableNameAndNeverOverwrites() async throws {
@@ -327,6 +386,7 @@ final class AppModelTests: XCTestCase {
   private func makeModel(
     outcome: CaptureOutcome,
     clipboard: StubClipboardService,
+    editor: (any ScreenshotEditing)? = nil,
     defaults: UserDefaults = UserDefaults(suiteName: UUID().uuidString)!,
     hotKeys: StubHotKeyService? = nil,
     desktopExporter: any DesktopExportServing = StubDesktopExportService(
@@ -341,6 +401,7 @@ final class AppModelTests: XCTestCase {
       ocrService: StubOCRService(),
       permissionService: AuthorizedPermissionService(),
       loginItemService: DisabledLoginItemService(),
+      editorController: editor ?? StubEditorController(),
       userDefaults: defaults,
       hotKeyServiceFactory: { hotKeys }
     )
