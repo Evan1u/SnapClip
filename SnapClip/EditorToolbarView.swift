@@ -107,9 +107,9 @@ struct EditorToolbarView: View {
       EditorToolStylePanel(
         model: viewModel.model,
         tool: tool,
-        onAction: { action in
+        onAction: onStyleAction,
+        onDismiss: {
           viewModel.styleMenuPresentedTool = nil
-          onStyleAction(action)
         },
         onPalette: {
           let initial = tool == .text
@@ -157,10 +157,17 @@ struct EditorToolbarView: View {
       onSelectTool(tool)
     } label: {
       VStack(spacing: 2) {
-        Image(systemName: symbol)
-          .font(.system(size: 15, weight: .semibold))
-          .frame(width: 32, height: 28)
-          .contentShape(Rectangle())
+        if tool == .text {
+          Text("T")
+            .font(.system(size: 17, weight: .bold))
+            .frame(width: 32, height: 28)
+            .contentShape(Rectangle())
+        } else {
+          Image(systemName: symbol)
+            .font(.system(size: 15, weight: .semibold))
+            .frame(width: 32, height: 28)
+            .contentShape(Rectangle())
+        }
         if tool == .crop, viewModel.model.hasCropDraft {
           Circle()
             .fill(accent)
@@ -233,7 +240,10 @@ private struct EditorToolStylePanel: View {
   let model: EditorToolbarModel
   let tool: EditorTool
   let onAction: (EditorStyleMenuAction) -> Void
+  let onDismiss: () -> Void
   let onPalette: () -> Void
+  @State private var hasSelectedWidth = false
+  @State private var hasSelectedColor = false
 
   var body: some View {
     Group {
@@ -261,22 +271,36 @@ private struct EditorToolStylePanel: View {
   }
 
   private var shapeMenu: some View {
-    VStack(spacing: 10) {
+    HStack(spacing: 8) {
       HStack(spacing: 6) {
         ForEach([CGFloat(2), 4, 8], id: \.self) { width in
           Button {
+            hasSelectedWidth = true
             onAction(.strokeWidth(width))
+            if hasSelectedWidth && hasSelectedColor {
+              onDismiss()
+            }
           } label: {
-            Capsule()
+            Circle()
               .fill(model.strokeColor.color)
-              .frame(height: width == 2 ? 2 : width == 4 ? 4 : 8)
+              .frame(
+                width: width == 2 ? 8 : width == 4 ? 11 : 14,
+                height: width == 2 ? 8 : width == 4 ? 11 : 14
+              )
               .frame(maxWidth: .infinity)
           }
           .buttonStyle(.plain)
         }
       }
+      Rectangle()
+        .fill(Color.black.opacity(0.12))
+        .frame(width: 1, height: 34)
       colorRow(selected: model.strokeColor) { color in
+        hasSelectedColor = true
         onAction(.strokeColor(color))
+        if hasSelectedWidth && hasSelectedColor {
+          onDismiss()
+        }
       } onPalette: {
         onPalette()
       }
@@ -288,6 +312,7 @@ private struct EditorToolStylePanel: View {
       ForEach([CGFloat(12), 24, 40], id: \.self) { width in
         Button {
           onAction(.mosaicWidth(width))
+          onDismiss()
         } label: {
           Circle()
             .fill(Color.black.opacity(0.75))
@@ -317,39 +342,49 @@ private struct EditorToolStylePanel: View {
   }
 
   private var textMenu: some View {
-    VStack(spacing: 10) {
-      HStack(spacing: 6) {
+    HStack(spacing: 8) {
+      Menu {
         ForEach(EditorFontDesign.allCases, id: \.self) { design in
           Button {
             onAction(.textFont(design))
           } label: {
-            Text(design.shortName)
-              .font(.system(size: 12))
-              .padding(.horizontal, 8)
-              .padding(.vertical, 4)
-              .background(design == model.textFontDesign ? Color.accentColor.opacity(0.2) : Color.clear)
+            if design == model.textFontDesign {
+              Label(design.shortName, systemImage: "checkmark")
+            } else {
+              Text(design.shortName)
+            }
           }
-          .buttonStyle(.plain)
         }
+      } label: {
+        Text("T")
+          .font(.system(size: 15, weight: .bold))
+          .frame(width: 34, height: 28)
+          .background(Color.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
       }
-      HStack {
-        Button { onAction(.textFontSize(max(10, model.textFontSize - 1))) } label: {
-          Image(systemName: "minus")
+      .menuStyle(.borderlessButton)
+      .fixedSize()
+
+      Menu {
+        ForEach([10, 12, 14, 16, 18, 24, 32, 48, 64, 72, 96], id: \.self) { size in
+          Button {
+            onAction(.textFontSize(CGFloat(size)))
+          } label: {
+            if size == Int(model.textFontSize) {
+              Label("\(size) pt", systemImage: "checkmark")
+            } else {
+              Text("\(size) pt")
+            }
+          }
         }
-        Text("\(Int(model.textFontSize)) pt")
-        Button { onAction(.textFontSize(min(96, model.textFontSize + 1))) } label: {
-          Image(systemName: "plus")
-        }
+      } label: {
+        Text("\(Int(model.textFontSize))")
+          .font(.system(size: 14))
+          .frame(width: 38, height: 28)
+          .background(Color.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 6))
       }
-      HStack {
-        Button { onAction(.textRotation(model.textRotation - 1)) } label: {
-          Image(systemName: "minus")
-        }
-        Text("\(Int(model.textRotation.rounded()))°")
-        Button { onAction(.textRotation(model.textRotation + 1)) } label: {
-          Image(systemName: "plus")
-        }
-      }
+      .menuStyle(.borderlessButton)
+      .fixedSize()
+
       colorRow(selected: model.textColor) { color in
         onAction(.textColor(color))
       } onPalette: {

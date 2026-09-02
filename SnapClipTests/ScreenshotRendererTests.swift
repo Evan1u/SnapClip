@@ -40,6 +40,123 @@ final class ScreenshotRendererTests: XCTestCase {
     XCTAssertEqual(bitmap.pixelsHigh, 2)
   }
 
+  func testCroppedRenderTranslatesCropOriginWithoutVerticalFlip() async throws {
+    let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+    guard let context = CGContext(
+      data: nil,
+      width: 4,
+      height: 2,
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    ) else {
+      return XCTFail("context")
+    }
+    context.setFillColor(CGColor(srgbRed: 1, green: 0, blue: 0, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: 2, height: 2))
+    context.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 1, alpha: 1))
+    context.fill(CGRect(x: 2, y: 0, width: 2, height: 2))
+    guard let source = context.makeImage() else { return XCTFail("image") }
+    let data = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(
+      data,
+      UTType.png.identifier as CFString,
+      1,
+      nil
+    ) else { return XCTFail("dest") }
+    CGImageDestinationAddImage(destination, source, nil)
+    _ = CGImageDestinationFinalize(destination)
+
+    let output = try await ScreenshotRenderer().render(
+      sourcePNG: data as Data,
+      cropRect: CGRect(x: 2, y: 0, width: 2, height: 2),
+      annotations: []
+    )
+    let bitmap = try makeBitmap(output)
+    let color = bitmap.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB)
+    XCTAssertEqual(color?.blueComponent ?? 0, 1, accuracy: 0.1)
+    XCTAssertEqual(color?.redComponent ?? 1, 0, accuracy: 0.1)
+  }
+
+  func testRenderKeepsSourceOrientationUpright() async throws {
+    let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+    guard let context = CGContext(
+      data: nil,
+      width: 2,
+      height: 2,
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    ) else {
+      return XCTFail("context")
+    }
+    context.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 1, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: 2, height: 1))
+    context.setFillColor(CGColor(srgbRed: 1, green: 0, blue: 0, alpha: 1))
+    context.fill(CGRect(x: 0, y: 1, width: 2, height: 1))
+    guard let source = context.makeImage() else { return XCTFail("image") }
+    let data = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(
+      data,
+      UTType.png.identifier as CFString,
+      1,
+      nil
+    ) else { return XCTFail("dest") }
+    CGImageDestinationAddImage(destination, source, nil)
+    _ = CGImageDestinationFinalize(destination)
+
+    let output = try await ScreenshotRenderer().render(
+      sourcePNG: data as Data,
+      cropRect: CGRect(x: 0, y: 0, width: 2, height: 2),
+      annotations: []
+    )
+    let bitmap = try makeBitmap(output)
+    let topLeft = bitmap.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB)
+    let bottomLeft = bitmap.colorAt(x: 0, y: 1)?.usingColorSpace(.sRGB)
+    XCTAssertEqual(topLeft?.redComponent ?? 0, 1, accuracy: 0.1)
+    XCTAssertEqual(bottomLeft?.blueComponent ?? 0, 1, accuracy: 0.1)
+  }
+
+  func testRenderTopHalfCropKeepsTopContent() async throws {
+    let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+    guard let context = CGContext(
+      data: nil,
+      width: 2,
+      height: 2,
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    ) else {
+      return XCTFail("context")
+    }
+    context.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 1, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: 2, height: 1))
+    context.setFillColor(CGColor(srgbRed: 1, green: 0, blue: 0, alpha: 1))
+    context.fill(CGRect(x: 0, y: 1, width: 2, height: 1))
+    guard let source = context.makeImage() else { return XCTFail("image") }
+    let data = NSMutableData()
+    guard let destination = CGImageDestinationCreateWithData(
+      data,
+      UTType.png.identifier as CFString,
+      1,
+      nil
+    ) else { return XCTFail("dest") }
+    CGImageDestinationAddImage(destination, source, nil)
+    _ = CGImageDestinationFinalize(destination)
+
+    let output = try await ScreenshotRenderer().render(
+      sourcePNG: data as Data,
+      cropRect: CGRect(x: 0, y: 0, width: 2, height: 1),
+      annotations: []
+    )
+    let bitmap = try makeBitmap(output)
+    let color = bitmap.colorAt(x: 0, y: 0)?.usingColorSpace(.sRGB)
+    XCTAssertEqual(color?.redComponent ?? 0, 1, accuracy: 0.1)
+  }
+
   func testRenderDrawsShapeLineArrowAndTextWithoutCrashing() async throws {
     let source = try makePNG(width: 40, height: 30, color: .init(red: 0.9, green: 0.9, blue: 0.9))
     let stroke = EditorStrokeStyle(

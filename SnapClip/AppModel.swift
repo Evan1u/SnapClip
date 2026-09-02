@@ -148,6 +148,9 @@ final class AppModel: ObservableObject {
 
   func capture(_ mode: CaptureMode) {
     guard !isCapturing else { return }
+    if editorController.isPresenting {
+      editorController.discardActiveSession()
+    }
 
     guard permissionService.isAuthorized || permissionService.requestAuthorization() else {
       canOpenPermissionSettings = true

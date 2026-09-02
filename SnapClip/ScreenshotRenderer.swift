@@ -71,25 +71,50 @@ struct ScreenshotRenderer: ScreenshotRendering {
     context.setShouldAntialias(true)
     context.setAllowsAntialiasing(true)
 
-    // Flip the bitmap context so model coordinates are top-left / y-down,
-    // matching the original source pixel coordinate system.
-    context.translateBy(x: 0, y: CGFloat(outputHeight))
-    context.scaleBy(x: 1, y: -1)
-    context.translateBy(x: -cropRect.minX, y: -cropRect.minY)
-
     let previousGraphicsContext = NSGraphicsContext.current
-    NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: true)
+    NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
     defer {
       NSGraphicsContext.current = previousGraphicsContext
     }
 
-    let sourceRect = CGRect(
+    let sourceSize = CGSize(width: sourceImage.width, height: sourceImage.height)
+    let sourceRect = CGRect(origin: .zero, size: sourceSize)
+    let cropImageRect = CGRect(
+      x: cropRect.minX,
+      y: cropRect.minY,
+      width: cropRect.width,
+      height: cropRect.height
+    )
+    guard let croppedSource = sourceImage.cropping(to: cropImageRect) else {
+      throw ScreenshotRendererError.invalidImage
+    }
+    context.draw(
+      croppedSource,
+      in: CGRect(x: 0, y: 0, width: CGFloat(outputWidth), height: CGFloat(outputHeight))
+    )
+    let outputRect = CGRect(
       x: 0,
       y: 0,
-      width: CGFloat(sourceImage.width),
-      height: CGFloat(sourceImage.height)
+      width: CGFloat(outputWidth),
+      height: CGFloat(outputHeight)
     )
-    context.draw(sourceImage, in: sourceRect)
+
+    // Quartz context origin is bottom-left. Map top-left model coordinates to CG
+    // coordinates by y' = cropHeight - y - cropRect.minY.
+    func modelPoint(_ point: CGPoint) -> CGPoint {
+      CGPoint(
+        x: point.x - cropRect.minX,
+        y: CGFloat(outputHeight) - (point.y - cropRect.minY)
+      )
+    }
+    func modelRect(_ rect: CGRect) -> CGRect {
+      CGRect(
+        x: rect.minX - cropRect.minX,
+        y: CGFloat(outputHeight) - (rect.maxY - cropRect.minY),
+        width: rect.width,
+        height: rect.height
+      )
+    }
 
     var pixelatedCache: [CGFloat: CGImage] = [:]
     for case .mosaic(let annotation) in annotations {
@@ -111,9 +136,9 @@ struct ScreenshotRenderer: ScreenshotRendering {
         context.restoreGState()
         continue
       }
-      path.move(to: first)
+      path.move(to: modelPoint(first))
       for point in annotation.points.dropFirst() {
-        path.addLine(to: point)
+        path.addLine(to: modelPoint(point))
       }
       context.addPath(path)
       context.setLineWidth(annotation.style.renderedBrushWidthInPixels)
@@ -121,22 +146,51 @@ struct ScreenshotRenderer: ScreenshotRendering {
       context.setLineJoin(.round)
       context.replacePathWithStrokedPath()
       context.clip()
-      context.draw(pixelated, in: sourceRect)
+      let croppedPixelated = pixelated.cropping(to: cropImageRect) ?? pixelated
+      context.draw(croppedPixelated, in: outputRect)
       context.restoreGState()
     }
 
     for annotation in annotations {
       switch annotation {
       case .rectangle(let value):
-        drawShapeRect(value.rect, style: value.style, context: context, kind: .rectangle)
+        drawShapeRect(
+          modelRect(value.rect),
+          style: value.style,
+          context: context,
+          kind: .rectangle,
+          rotationDegrees: value.rotationDegrees
+        )
       case .ellipse(let value):
-        drawShapeRect(value.rect, style: value.style, context: context, kind: .ellipse)
+        drawShapeRect(
+          modelRect(value.rect),
+          style: value.style,
+          context: context,
+          kind: .ellipse,
+          rotationDegrees: value.rotationDegrees
+        )
       case .line(let value):
-        drawLine(value, context: context, arrow: false)
+        drawLine(
+          start: modelPoint(value.start),
+          end: modelPoint(value.end),
+          style: value.style,
+          context: context,
+          arrow: false
+        )
       case .arrow(let value):
-        drawLine(value, context: context, arrow: true)
+        drawLine(
+          start: modelPoint(value.start),
+          end: modelPoint(value.end),
+          style: value.style,
+          context: context,
+          arrow: true
+        )
       case .text(let value):
-        drawText(value, context: context)
+        drawText(
+          annotation: value,
+          context: context,
+          mappedFrame: modelRect(value.frame)
+        )
       case .mosaic:
         break
       }
@@ -210,9 +264,14 @@ struct ScreenshotRenderer: ScreenshotRendering {
     _ rect: CGRect,
     style: EditorStrokeStyle,
     context: CGContext,
-    kind: ShapeKind
+    kind: ShapeKind,
+    rotationDegrees: Double
   ) {
     context.saveGState()
+    let center = CGPoint(x: rect.midX, y: rect.midY)
+    context.translateBy(x: center.x, y: center.y)
+    context.rotate(by: CGFloat(-rotationDegrees * Double.pi / 180))
+    context.translateBy(x: -center.x, y: -center.y)
     context.setStrokeColor(cgColor(style.color))
     context.setLineWidth(style.renderedLineWidthInPixels)
     switch kind {
@@ -225,48 +284,55 @@ struct ScreenshotRenderer: ScreenshotRendering {
   }
 
   private static func drawLine(
-    _ annotation: LineAnnotation,
+    start: CGPoint,
+    end: CGPoint,
+    style: EditorStrokeStyle,
     context: CGContext,
     arrow: Bool
   ) {
     context.saveGState()
-    context.setStrokeColor(cgColor(annotation.style.color))
-    context.setLineWidth(annotation.style.renderedLineWidthInPixels)
-    context.setLineCap(.round)
+    context.setStrokeColor(cgColor(style.color))
+    context.setLineWidth(style.renderedLineWidthInPixels)
+    context.setLineCap(arrow ? .butt : .round)
     context.beginPath()
-    context.move(to: annotation.start)
-    context.addLine(to: annotation.end)
+    context.move(to: start)
+    context.addLine(to: end)
     context.strokePath()
 
     if arrow {
-      let length = EditorGeometry.distance(annotation.start, annotation.end)
+      let length = hypot(end.x - start.x, end.y - start.y)
       if length > 0 {
-        let angle = atan2(
-          annotation.end.y - annotation.start.y,
-          annotation.end.x - annotation.start.x
-        )
-        let headLength = max(annotation.style.renderedLineWidthInPixels * 3.2, 10)
-        let wing = CGFloat.pi * 0.22
+        let angle = atan2(end.y - start.y, end.x - start.x)
+        let headLength = max(style.renderedLineWidthInPixels * 7, 20)
         let base = CGPoint(
-          x: annotation.end.x - headLength * cos(angle),
-          y: annotation.end.y - headLength * sin(angle)
+          x: end.x - headLength * cos(angle),
+          y: end.y - headLength * sin(angle)
         )
+        let perpendicular = CGPoint(x: -sin(angle), y: cos(angle))
+        let halfBase = max(
+          style.renderedLineWidthInPixels * 1.1,
+          headLength * 0.22
+        )
+        let leftBase = CGPoint(
+          x: base.x + perpendicular.x * halfBase,
+          y: base.y + perpendicular.y * halfBase
+        )
+        let rightBase = CGPoint(
+          x: base.x - perpendicular.x * halfBase,
+          y: base.y - perpendicular.y * halfBase
+        )
+
         context.beginPath()
-        context.move(to: annotation.end)
-        context.addLine(
-          to: CGPoint(
-            x: base.x + headLength * cos(angle + .pi - wing),
-            y: base.y + headLength * sin(angle + .pi - wing)
-          )
-        )
-        context.addLine(
-          to: CGPoint(
-            x: base.x + headLength * cos(angle + .pi + wing),
-            y: base.y + headLength * sin(angle + .pi + wing)
-          )
-        )
+        context.move(to: start)
+        context.addLine(to: base)
+        context.strokePath()
+
+        context.beginPath()
+        context.move(to: end)
+        context.addLine(to: leftBase)
+        context.addLine(to: rightBase)
         context.closePath()
-        context.setFillColor(cgColor(annotation.style.color))
+        context.setFillColor(cgColor(style.color))
         context.fillPath()
       }
     }
@@ -275,19 +341,23 @@ struct ScreenshotRenderer: ScreenshotRendering {
 
   // MARK: Text
 
-  private static func drawText(_ annotation: TextAnnotation, context: CGContext) {
+  private static func drawText(
+    annotation: TextAnnotation,
+    context: CGContext,
+    mappedFrame: CGRect
+  ) {
     let attributes = EditorTextLayout.attributes(for: annotation.style)
     let attributed = NSAttributedString(string: annotation.text, attributes: attributes)
 
     context.saveGState()
-    let center = CGPoint(x: annotation.frame.midX, y: annotation.frame.midY)
+    let center = CGPoint(x: mappedFrame.midX, y: mappedFrame.midY)
     let radians = annotation.style.rotationDegrees * Double.pi / 180
     context.translateBy(x: center.x, y: center.y)
-    context.rotate(by: CGFloat(radians))
+    context.rotate(by: CGFloat(-radians))
     context.translateBy(x: -center.x, y: -center.y)
 
     attributed.draw(
-      with: annotation.frame,
+      with: mappedFrame,
       options: [.usesLineFragmentOrigin, .usesFontLeading],
       context: nil
     )

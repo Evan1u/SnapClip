@@ -8,7 +8,7 @@
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
   <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
-  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.1.0"><img alt="Release: v1.1.0" src="https://img.shields.io/badge/Release-v1.1.0-E96548?style=flat-square"></a>
+  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.2.0"><img alt="Release: v1.2.0" src="https://img.shields.io/badge/Release-v1.2.0-E96548?style=flat-square"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
 </p>
 
@@ -65,12 +65,12 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 
 ## 下载
 
-[下载 SnapClip v1.1.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.1.0/SnapClip-v1.1.0-arm64.dmg)
+[下载 SnapClip v1.2.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.2.0/SnapClip-v1.2.0-arm64.dmg)
 
 - 系统要求：Apple Silicon Mac、macOS 14 或更高版本。
-- 推荐安装包：`SnapClip-v1.1.0-arm64.dmg`，约 2.1 MiB。
-- DMG SHA-256：`8e85b499c741c36835f7650573f2c7869c2c0d1bdeb0a3c42c601dca3c6186ed`
-- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.1.0/SnapClip-v1.1.0-arm64.zip)，SHA-256：`99566d20699a3f0cac1df2386460b703fb33589cd9ad5bfcf4558f3ef260c2ab`
+- 推荐安装包：`SnapClip-v1.2.0-arm64.dmg`，约 2.7 MiB。
+- DMG SHA-256：`bc073d921a8a5f69790c259bfa2bba47f15e9b8333d21d520e462d9a2dbcdc2d`
+- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.2.0/SnapClip-v1.2.0-arm64.zip)，SHA-256：`5e258089cf7f824144b4712a7021aac02f40f1198d223dfbdbca37ff55008ca7`
 
 ### 安装
 
@@ -78,7 +78,7 @@ macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张�
 2. 首次尝试打开后，如果 macOS 阻止运行，请前往 **系统设置 → 隐私与安全性**，在安全提示处选择 **仍要打开**。
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
-> `v1.1.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
+> `v1.2.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
 
 ### 从源码运行
 

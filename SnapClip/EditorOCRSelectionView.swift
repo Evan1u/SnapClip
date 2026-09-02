@@ -20,8 +20,6 @@ final class EditorOCRSelectionView: NSView, ImageAnalysisOverlayViewDelegate {
     fatalError("init(coder:) is not supported")
   }
 
-  override var isFlipped: Bool { true }
-
   func showImage(_ image: NSImage?) {
     cancelAnalysis()
     overlayView.resetSelection()

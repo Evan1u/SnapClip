@@ -207,7 +207,7 @@ final class EditorWindowController: NSObject, NSWindowDelegate, ScreenshotEditin
     else {
       throw EditorPresentationError.invalidImage
     }
-    guard let image = NSImage(data: pngData) else {
+    guard let image = pixelSizedImage(from: pngData) else {
       throw EditorPresentationError.invalidImage
     }
 
@@ -353,6 +353,18 @@ final class EditorWindowController: NSObject, NSWindowDelegate, ScreenshotEditin
     return pixelSize.width / displayWidth
   }
 
+  private func pixelSizedImage(from data: Data) -> NSImage? {
+    guard let representation = NSBitmapImageRep(data: data) else { return nil }
+    let image = NSImage(
+      size: NSSize(
+        width: representation.pixelsWide,
+        height: representation.pixelsHigh
+      )
+    )
+    image.addRepresentation(representation)
+    return image
+  }
+
   private func sizeWindow(for pixelSize: CGSize, window: NSWindow) {
     let visible = window.screen?.visibleFrame ?? NSScreen.main?.visibleFrame
       ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
@@ -415,6 +427,7 @@ final class EditorWindowController: NSObject, NSWindowDelegate, ScreenshotEditin
       canvas.updateSelectedShapeStroke(color: color)
     case .mosaicWidth(let width):
       styleStore.setMosaicNominalBrushWidth(width)
+      canvas.refreshMosaicCursor()
     case .textFont(let design):
       styleStore.setTextFontDesign(design)
       canvas.updateSelectedTextStyle(
@@ -514,6 +527,9 @@ final class EditorWindowController: NSObject, NSWindowDelegate, ScreenshotEditin
     default:
       toolbarModel.styleMenuPresentedTool = nil
     }
+    if tool == .mosaic {
+      canvas.refreshMosaicCursor()
+    }
     if tool == .ocr {
       prepareOCRSelection()
     }
@@ -537,7 +553,7 @@ final class EditorWindowController: NSObject, NSWindowDelegate, ScreenshotEditin
           annotations: state.annotations
         )
         guard !Task.isCancelled else { return }
-        let image = NSImage(data: data)
+        let image = self.pixelSizedImage(from: data)
         self.workspace?.canvas.showOCRSelection(image: image)
       } catch {
         self.workspace?.showError("OCR 合成失败：\(error.localizedDescription)")

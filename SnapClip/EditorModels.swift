@@ -224,6 +224,7 @@ struct ShapeAnnotation: Identifiable, Equatable, Sendable {
   let id: UUID
   var rect: CGRect
   var style: EditorStrokeStyle
+  var rotationDegrees: Double = 0
 }
 
 struct LineAnnotation: Identifiable, Equatable, Sendable {
@@ -231,6 +232,7 @@ struct LineAnnotation: Identifiable, Equatable, Sendable {
   var start: CGPoint
   var end: CGPoint
   var style: EditorStrokeStyle
+  var rotationDegrees: Double = 0
 }
 
 struct TextAnnotation: Identifiable, Equatable, Sendable {
@@ -782,9 +784,17 @@ struct EditorInteractionState: Equatable, Sendable {
     let tolerance = metrics.hitTolerance
     switch annotation {
     case .rectangle(let value):
-      return value.rect.insetBy(dx: -tolerance, dy: -tolerance).contains(point)
+      return EditorGeometry.containsRotatedFrame(
+        value.rect,
+        point: point,
+        degrees: value.rotationDegrees
+      ) || value.rect.insetBy(dx: -tolerance, dy: -tolerance).contains(point)
     case .ellipse(let value):
-      return value.rect.insetBy(dx: -tolerance, dy: -tolerance).contains(point)
+      return EditorGeometry.containsRotatedFrame(
+        value.rect,
+        point: point,
+        degrees: value.rotationDegrees
+      ) || value.rect.insetBy(dx: -tolerance, dy: -tolerance).contains(point)
     case .line(let value), .arrow(let value):
       return EditorGeometry.distance(from: point, toSegment: value.start, end: value.end)
         <= tolerance
@@ -893,7 +903,19 @@ struct EditorInteractionState: Equatable, Sendable {
     case .mosaic(var points, let style):
       let current = EditorGeometry.clamp(point, to: bounds)
       if points.last != current {
-        points.append(current)
+        let step = max(style.renderedBrushWidthInPixels / 2, 1)
+        var last = points.last ?? current
+        while EditorGeometry.distance(last, current) >= step {
+          let fraction = step / max(EditorGeometry.distance(last, current), 0.0001)
+          last = CGPoint(
+            x: last.x + (current.x - last.x) * fraction,
+            y: last.y + (current.y - last.y) * fraction
+          )
+          points.append(last)
+        }
+        if points.last != current {
+          points.append(current)
+        }
         creationDraft = .mosaic(points: points, style: style)
       }
     case .selectionMove(let original, let startPoint, let hasChanged):

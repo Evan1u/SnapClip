@@ -1,5 +1,6 @@
 import AppKit
 import CoreGraphics
+import CoreImage
 import Foundation
 
 /// Converts between source-pixel model coordinates and canvas display points.
@@ -47,6 +48,7 @@ struct EditorCanvasViewport: Equatable {
 
 enum CanvasResizeHandle: Equatable {
   case shape(EditorCropHandle)
+  case shapeRotation
   case lineStart
   case lineEnd
   case textCorner(Int)
@@ -59,6 +61,8 @@ final class EditorCanvasView: NSView {
   private(set) var interactionState: EditorInteractionState
   private let styleStore: EditorToolStyleStore
   private var image: NSImage?
+  private var sourceCGImage: CGImage?
+  private var mosaicPreviewCache: [CGFloat: NSImage] = [:]
   private var lastViewport = EditorCanvasViewport(
     modelRect: .zero,
     displayRect: .zero
@@ -76,6 +80,45 @@ final class EditorCanvasView: NSView {
 
   override var isFlipped: Bool { true }
   override var acceptsFirstResponder: Bool { true }
+
+  override func resetCursorRects() {
+    super.resetCursorRects()
+    guard interactionState.activeTool == .mosaic,
+      let cursor = mosaicCursor()
+    else {
+      return
+    }
+    addCursorRect(bounds, cursor: cursor)
+  }
+
+  func refreshMosaicCursor() {
+    window?.invalidateCursorRects(for: self)
+  }
+
+  private func mosaicCursor() -> NSCursor? {
+    let nominalWidth = styleStore.mosaicDefaults.nominalBrushWidth
+    let pixelWidth = nominalWidth * interactionState.pointsToImageScale
+    let diameter = max(pixelWidth * viewport.viewPointsPerModelPixel, 8)
+    let size = NSSize(width: diameter + 4, height: diameter + 4)
+    let center = CGPoint(x: size.width / 2, y: size.height / 2)
+    let image = NSImage(size: size, flipped: false) { _ in
+      let circle = NSBezierPath(
+        ovalIn: NSRect(
+          x: center.x - diameter / 2,
+          y: center.y - diameter / 2,
+          width: diameter,
+          height: diameter
+        )
+      )
+      circle.lineWidth = 1.5
+      NSColor.black.withAlphaComponent(0.75).setStroke()
+      NSColor.white.withAlphaComponent(0.35).setFill()
+      circle.fill()
+      circle.stroke()
+      return true
+    }
+    return NSCursor(image: image, hotSpot: center)
+  }
 
   init(
     frame frameRect: NSRect,
@@ -102,6 +145,12 @@ final class EditorCanvasView: NSView {
 
   func setImage(_ image: NSImage?) {
     self.image = image
+    self.sourceCGImage = image?.cgImage(
+      forProposedRect: nil,
+      context: nil,
+      hints: nil
+    )
+    mosaicPreviewCache.removeAll()
     needsDisplay = true
   }
 
@@ -112,11 +161,16 @@ final class EditorCanvasView: NSView {
   }
 
   func setActiveTool(_ tool: EditorTool) {
+    let wasMosaic = interactionState.activeTool == .mosaic
     interactionState.setActiveTool(tool)
     if tool != .ocr {
       hideOCRSelection()
     }
     needsDisplay = true
+    window?.invalidateCursorRects(for: self)
+    if wasMosaic && tool != .mosaic {
+      NSCursor.arrow.set()
+    }
     onStateChanged?()
   }
 
@@ -130,6 +184,7 @@ final class EditorCanvasView: NSView {
       hideOCRSelection()
     }
     needsDisplay = true
+    window?.invalidateCursorRects(for: self)
     onStateChanged?()
   }
 
@@ -297,21 +352,46 @@ final class EditorCanvasView: NSView {
   // MARK: Source drawing
 
   private func drawSourceImage() {
-    guard let image else { return }
+    guard let cgImage = sourceCGImage else { return }
     let sourceRect: CGRect
     if interactionState.isCropModeActive {
       sourceRect = interactionState.originalPixelBounds
     } else {
       sourceRect = interactionState.crop.appliedCropRect
     }
-    image.draw(
+    guard let displayImage = croppedDisplayImage(cgImage, sourceRect: sourceRect) else {
+      return
+    }
+    displayImage.draw(
       in: viewport.displayRect,
-      from: sourceRect,
+      from: .zero,
       operation: .sourceOver,
       fraction: 1,
       respectFlipped: true,
       hints: [.interpolation: NSImageInterpolation.high]
     )
+  }
+
+  private func croppedDisplayImage(
+    _ cgImage: CGImage,
+    sourceRect: CGRect
+  ) -> NSImage? {
+    let cropRect = CGRect(
+      x: sourceRect.minX,
+      y: sourceRect.minY,
+      width: max(sourceRect.width, 0),
+      height: max(sourceRect.height, 0)
+    )
+    guard let cropped = cgImage.cropping(to: cropRect) else { return nil }
+    let representation = NSBitmapImageRep(cgImage: cropped)
+    let result = NSImage(
+      size: NSSize(
+        width: representation.pixelsWide,
+        height: representation.pixelsHigh
+      )
+    )
+    result.addRepresentation(representation)
+    return result
   }
 
   // MARK: Crop overlay
@@ -389,16 +469,31 @@ final class EditorCanvasView: NSView {
     for annotation in interactionState.annotations {
       drawAnnotation(annotation, selected: annotation.id == interactionState.selectedObjectID)
     }
+    if case .mosaic(let points, let style)? = interactionState.creationDraft {
+      drawMosaicPreview(
+        MosaicAnnotation(id: UUID(), points: points, style: style)
+      )
+    }
   }
 
   private func drawAnnotation(_ annotation: EditorAnnotation, selected: Bool) {
     switch annotation {
     case .rectangle(let value):
-      strokeShapeRect(value.rect, style: value.style, ellipse: false)
-      if selected { drawShapeSelection(value.rect) }
+      strokeShapeRect(
+        value.rect,
+        style: value.style,
+        ellipse: false,
+        rotationDegrees: value.rotationDegrees
+      )
+      if selected { drawShapeSelection(value.rect, rotationDegrees: value.rotationDegrees) }
     case .ellipse(let value):
-      strokeShapeRect(value.rect, style: value.style, ellipse: true)
-      if selected { drawShapeSelection(value.rect) }
+      strokeShapeRect(
+        value.rect,
+        style: value.style,
+        ellipse: true,
+        rotationDegrees: value.rotationDegrees
+      )
+      if selected { drawShapeSelection(value.rect, rotationDegrees: value.rotationDegrees) }
     case .line(let value):
       drawLine(value, arrow: false)
       if selected { drawLineSelection(value) }
@@ -412,72 +507,150 @@ final class EditorCanvasView: NSView {
     }
   }
 
-  private func strokeShapeRect(_ rect: CGRect, style: EditorStrokeStyle, ellipse: Bool) {
+  private func strokeShapeRect(
+    _ rect: CGRect,
+    style: EditorStrokeStyle,
+    ellipse: Bool,
+    rotationDegrees: Double
+  ) {
     let viewRect = viewport.viewRect(fromModel: rect)
+    NSGraphicsContext.saveGraphicsState()
+    let center = CGPoint(x: viewRect.midX, y: viewRect.midY)
+    let transform = NSAffineTransform()
+    transform.translateX(by: center.x, yBy: center.y)
+    transform.rotate(byDegrees: CGFloat(rotationDegrees))
+    transform.translateX(by: -center.x, yBy: -center.y)
+    transform.concat()
     let path = ellipse ? NSBezierPath(ovalIn: viewRect) : NSBezierPath(rect: viewRect)
     path.lineWidth = viewport.lineWidth(fromModel: style.renderedLineWidthInPixels)
     style.color.nsColor.setStroke()
     path.stroke()
+    NSGraphicsContext.restoreGraphicsState()
   }
 
   private func drawLine(_ line: LineAnnotation, arrow: Bool) {
-    let path = NSBezierPath()
-    path.move(to: viewport.viewPoint(fromModel: line.start))
-    path.line(to: viewport.viewPoint(fromModel: line.end))
-    path.lineWidth = viewport.lineWidth(fromModel: line.style.renderedLineWidthInPixels)
-    path.lineCapStyle = .round
+    let start = viewport.viewPoint(fromModel: line.start)
+    let end = viewport.viewPoint(fromModel: line.end)
+    let lineWidth = viewport.lineWidth(fromModel: line.style.renderedLineWidthInPixels)
     line.style.color.nsColor.setStroke()
-    path.stroke()
 
-    if arrow {
-      let start = viewport.viewPoint(fromModel: line.start)
-      let end = viewport.viewPoint(fromModel: line.end)
-      let length = hypot(end.x - start.x, end.y - start.y)
-      guard length > 0 else { return }
-      let angle = atan2(end.y - start.y, end.x - start.x)
-      let headLength = max(path.lineWidth * 3.2, 8)
-      let wing = CGFloat.pi * 0.22
-      let base = CGPoint(
-        x: end.x - headLength * cos(angle),
-        y: end.y - headLength * sin(angle)
-      )
-      let triangle = NSBezierPath()
-      triangle.move(to: end)
-      triangle.line(
-        to: CGPoint(
-          x: base.x + headLength * cos(angle + .pi - wing),
-          y: base.y + headLength * sin(angle + .pi - wing)
-        )
-      )
-      triangle.line(
-        to: CGPoint(
-          x: base.x + headLength * cos(angle + .pi + wing),
-          y: base.y + headLength * sin(angle + .pi + wing)
-        )
-      )
-      triangle.close()
-      line.style.color.nsColor.setFill()
-      triangle.fill()
+    guard arrow else {
+      let path = NSBezierPath()
+      path.move(to: start)
+      path.line(to: end)
+      path.lineWidth = lineWidth
+      path.lineCapStyle = .round
+      path.stroke()
+      return
     }
+
+    let length = hypot(end.x - start.x, end.y - start.y)
+    guard length > 0 else { return }
+    let angle = atan2(end.y - start.y, end.x - start.x)
+    let headLength = max(lineWidth * 7, 20)
+    let base = CGPoint(
+      x: end.x - headLength * cos(angle),
+      y: end.y - headLength * sin(angle)
+    )
+    let perpendicular = CGPoint(x: -sin(angle), y: cos(angle))
+    let halfBase = max(lineWidth * 1.1, headLength * 0.22)
+    let leftBase = CGPoint(
+      x: base.x + perpendicular.x * halfBase,
+      y: base.y + perpendicular.y * halfBase
+    )
+    let rightBase = CGPoint(
+      x: base.x - perpendicular.x * halfBase,
+      y: base.y - perpendicular.y * halfBase
+    )
+
+    func strokeLine(_ from: CGPoint, to: CGPoint) {
+      let path = NSBezierPath()
+      path.move(to: from)
+      path.line(to: to)
+      path.lineWidth = lineWidth
+      path.lineCapStyle = .round
+      path.stroke()
+    }
+
+    strokeLine(start, to: base)
+    let triangle = NSBezierPath()
+    triangle.move(to: end)
+    triangle.line(to: leftBase)
+    triangle.line(to: rightBase)
+    triangle.close()
+    line.style.color.nsColor.setFill()
+    triangle.fill()
   }
 
   private func drawMosaicPreview(_ mosaic: MosaicAnnotation) {
     guard let first = mosaic.points.first else { return }
-    let path = NSBezierPath()
+    guard let cgContext = NSGraphicsContext.current?.cgContext else { return }
+    let path = CGMutablePath()
     path.move(to: viewport.viewPoint(fromModel: first))
     for point in mosaic.points.dropFirst() {
-      path.line(to: viewport.viewPoint(fromModel: point))
+      path.addLine(to: viewport.viewPoint(fromModel: point))
     }
-    path.lineWidth = viewport.lineWidth(fromModel: mosaic.style.renderedBrushWidthInPixels)
-    path.lineCapStyle = .round
-    path.lineJoinStyle = .round
-    NSColor(
-      calibratedRed: 0.25,
-      green: 0.25,
-      blue: 0.25,
-      alpha: 0.92
-    ).setStroke()
-    path.stroke()
+    if let pixellated = pixellatedPreview(scale: mosaic.style.renderedPixelScaleInPixels) {
+      NSGraphicsContext.saveGraphicsState()
+      cgContext.addPath(path)
+      cgContext.setLineWidth(
+        viewport.lineWidth(fromModel: mosaic.style.renderedBrushWidthInPixels)
+      )
+      cgContext.setLineCap(.round)
+      cgContext.setLineJoin(.round)
+      cgContext.replacePathWithStrokedPath()
+      cgContext.clip()
+      let sourceRect = interactionState.isCropModeActive
+        ? interactionState.originalPixelBounds
+        : interactionState.crop.appliedCropRect
+      if let pixellatedCG = pixellated.cgImage(
+        forProposedRect: nil,
+        context: nil,
+        hints: nil
+      ), let displayImage = croppedDisplayImage(
+        pixellatedCG,
+        sourceRect: sourceRect
+      ) {
+        displayImage.draw(
+          in: viewport.displayRect,
+          from: .zero,
+          operation: .sourceOver,
+          fraction: 1,
+          respectFlipped: true,
+          hints: [.interpolation: NSImageInterpolation.high]
+        )
+      }
+      NSGraphicsContext.restoreGraphicsState()
+    }
+  }
+
+  private func pixellatedPreview(scale: CGFloat) -> NSImage? {
+    let key = max(scale, 1)
+    if let cached = mosaicPreviewCache[key] {
+      return cached
+    }
+    guard let cgImage = image?.cgImage(
+      forProposedRect: nil,
+      context: nil,
+      hints: nil
+    ), let filter = CIFilter(name: "CIPixellate") else {
+      return nil
+    }
+    let input = CIImage(cgImage: cgImage)
+    filter.setValue(input, forKey: kCIInputImageKey)
+    filter.setValue(Double(key), forKey: kCIInputScaleKey)
+    guard let output = filter.outputImage else { return nil }
+    let context = CIContext(options: [.workingColorSpace: NSNull()])
+    guard let result = context.createCGImage(output, from: output.extent) else {
+      return nil
+    }
+    let representation = NSBitmapImageRep(cgImage: result)
+    let resultImage = NSImage(
+      size: NSSize(width: representation.pixelsWide, height: representation.pixelsHigh)
+    )
+    resultImage.addRepresentation(representation)
+    mosaicPreviewCache[key] = resultImage
+    return resultImage
   }
 
   private func drawText(_ annotation: TextAnnotation, selected: Bool) {
@@ -515,13 +688,22 @@ final class EditorCanvasView: NSView {
     }
   }
 
-  private func drawShapeSelection(_ rect: CGRect) {
+  private func drawShapeSelection(_ rect: CGRect, rotationDegrees: Double) {
     let viewRect = viewport.viewRect(fromModel: rect)
     let path = NSBezierPath(rect: viewRect.insetBy(dx: -2, dy: -2))
     NSColor.white.withAlphaComponent(0.8).setStroke()
     path.lineWidth = 1
     path.stroke()
     drawCornerHandles(viewRect)
+    let center = CGPoint(x: rect.midX, y: rect.midY)
+    let handleModel = EditorGeometry.rotatedPoint(
+      CGPoint(x: rect.midX, y: rect.minY - 24),
+      around: center,
+      by: rotationDegrees
+    )
+    let handle = viewport.viewPoint(fromModel: handleModel)
+    NSColor.white.setFill()
+    NSRect(x: handle.x - 4, y: handle.y - 4, width: 8, height: 8).fill()
   }
 
   private func drawLineSelection(_ line: LineAnnotation) {
@@ -530,6 +712,17 @@ final class EditorCanvasView: NSView {
       NSColor.white.setFill()
       NSRect(x: view.x - 3, y: view.y - 3, width: 6, height: 6).fill()
     }
+    let centerModel = CGPoint(
+      x: (line.start.x + line.end.x) / 2,
+      y: (line.start.y + line.end.y) / 2
+    )
+    let handleModel = CGPoint(
+      x: centerModel.x,
+      y: min(line.start.y, line.end.y) - 24
+    )
+    let handle = viewport.viewPoint(fromModel: handleModel)
+    NSColor.white.setFill()
+    NSRect(x: handle.x - 4, y: handle.y - 4, width: 8, height: 8).fill()
   }
 
   private func drawCornerHandles(_ rect: NSRect) {
@@ -668,10 +861,29 @@ final class EditorCanvasView: NSView {
       interactionState.pointerUp(
         at: viewport.modelPoint(fromView: viewPoint)
       )
+      switch interactionState.activeTool {
+      case .rectangle, .ellipse, .line, .arrow:
+        interactionState.setActiveTool(.selection)
+      case .mosaic, .selection, .text, .crop, .ocr:
+        break
+      }
     }
     needsDisplay = true
     onStateChanged?()
     onCanvasInteraction?()
+  }
+
+  override func rightMouseDown(with event: NSEvent) {
+    if interactionState.activeTool == .mosaic {
+      interactionState.setActiveTool(.selection)
+      needsDisplay = true
+      window?.invalidateCursorRects(for: self)
+      NSCursor.arrow.set()
+      onStateChanged?()
+      onCanvasInteraction?()
+      return
+    }
+    super.rightMouseDown(with: event)
   }
 
   private func resizeHandle(at point: NSPoint) -> (annotation: EditorAnnotation, kind: CanvasResizeHandle)? {
@@ -699,6 +911,16 @@ final class EditorCanvasView: NSView {
       })?.0 {
         return (annotation, .shape(handle))
       }
+      if let rotationHandle = rotationHandlePoint(
+        center: CGPoint(x: value.rect.midX, y: value.rect.midY),
+        topY: value.rect.minY,
+        rotationDegrees: value.rotationDegrees
+      ) {
+        let view = viewport.viewPoint(fromModel: rotationHandle)
+        if hypot(view.x - point.x, view.y - point.y) <= tolerance {
+          return (annotation, .shapeRotation)
+        }
+      }
     case .line(let value):
       let start = viewport.viewPoint(fromModel: value.start)
       let end = viewport.viewPoint(fromModel: value.end)
@@ -708,6 +930,19 @@ final class EditorCanvasView: NSView {
       if hypot(end.x - point.x, end.y - point.y) <= tolerance {
         return (annotation, .lineEnd)
       }
+      if let rotationHandle = rotationHandlePoint(
+        center: CGPoint(
+          x: (value.start.x + value.end.x) / 2,
+          y: (value.start.y + value.end.y) / 2
+        ),
+        topY: min(value.start.y, value.end.y),
+        rotationDegrees: 0
+      ) {
+        let view = viewport.viewPoint(fromModel: rotationHandle)
+        if hypot(view.x - point.x, view.y - point.y) <= tolerance {
+          return (annotation, .shapeRotation)
+        }
+      }
     case .arrow(let value):
       let start = viewport.viewPoint(fromModel: value.start)
       let end = viewport.viewPoint(fromModel: value.end)
@@ -716,6 +951,19 @@ final class EditorCanvasView: NSView {
       }
       if hypot(end.x - point.x, end.y - point.y) <= tolerance {
         return (annotation, .lineEnd)
+      }
+      if let rotationHandle = rotationHandlePoint(
+        center: CGPoint(
+          x: (value.start.x + value.end.x) / 2,
+          y: (value.start.y + value.end.y) / 2
+        ),
+        topY: min(value.start.y, value.end.y),
+        rotationDegrees: 0
+      ) {
+        let view = viewport.viewPoint(fromModel: rotationHandle)
+        if hypot(view.x - point.x, view.y - point.y) <= tolerance {
+          return (annotation, .shapeRotation)
+        }
       }
     case .text(let value):
       let center = CGPoint(x: value.frame.midX, y: value.frame.midY)
@@ -760,6 +1008,19 @@ final class EditorCanvasView: NSView {
     return nil
   }
 
+  private func rotationHandlePoint(
+    center: CGPoint,
+    topY: CGFloat,
+    rotationDegrees: Double
+  ) -> CGPoint? {
+    let raw = CGPoint(x: center.x, y: topY - 26)
+    return EditorGeometry.rotatedPoint(
+      raw,
+      around: center,
+      by: rotationDegrees
+    )
+  }
+
   private func applyResizeDrag(
     to viewPoint: NSPoint,
     original: EditorAnnotation,
@@ -770,6 +1031,46 @@ final class EditorCanvasView: NSView {
     var updated: EditorAnnotation?
 
     switch (original, kind) {
+    case (.rectangle(let value), .shapeRotation),
+      (.ellipse(let value), .shapeRotation):
+      var newValue = value
+      let center = CGPoint(x: value.rect.midX, y: value.rect.midY)
+      let handle = CGPoint(x: center.x, y: value.rect.minY - 26)
+      let handleAngle = atan2(
+        handle.y - center.y,
+        handle.x - center.x
+      ) * 180 / .pi
+      let targetAngle = atan2(
+        point.y - center.y,
+        point.x - center.x
+      ) * 180 / .pi
+      let delta = EditorGeometry.normalizedAngle(targetAngle - handleAngle)
+      let next = EditorGeometry.normalizedAngle(value.rotationDegrees + delta)
+      guard next != value.rotationDegrees else { break }
+      newValue.rotationDegrees = next
+      if case .rectangle = original {
+        updated = .rectangle(newValue)
+      } else {
+        updated = .ellipse(newValue)
+      }
+    case (.line(let value), .shapeRotation), (.arrow(let value), .shapeRotation):
+      let center = CGPoint(
+        x: (value.start.x + value.end.x) / 2,
+        y: (value.start.y + value.end.y) / 2
+      )
+      let handle = CGPoint(x: center.x, y: min(value.start.y, value.end.y) - 26)
+      let handleAngle = atan2(handle.y - center.y, handle.x - center.x) * 180 / .pi
+      let targetAngle = atan2(point.y - center.y, point.x - center.x) * 180 / .pi
+      let delta = EditorGeometry.normalizedAngle(targetAngle - handleAngle)
+      guard abs(delta) > 0.01 else { break }
+      var newValue = value
+      newValue.start = EditorGeometry.rotatedPoint(value.start, around: center, by: delta)
+      newValue.end = EditorGeometry.rotatedPoint(value.end, around: center, by: delta)
+      if case .line = original {
+        updated = .line(newValue)
+      } else {
+        updated = .arrow(newValue)
+      }
     case (.rectangle(let value), .shape(let handle)),
       (.ellipse(let value), .shape(let handle)):
       let rect = resizedRect(
@@ -1047,25 +1348,58 @@ final class EditorCanvasView: NSView {
   private var cropDragHandle: EditorCropHandle?
   private var cropDragStart: NSPoint?
   private var cropWasMoving = false
+  private var cropSelectionStart: CGPoint?
 
   private func handleCropMouseDown(_ point: NSPoint) {
     guard let draft = interactionState.crop.draftCropRect else { return }
     let box = viewport.viewRect(fromModel: draft)
+    if let event = NSApp.currentEvent, event.clickCount == 2, box.contains(point) {
+      interactionState.applyCropDraft()
+      interactionState.setActiveTool(.selection)
+      cropDragHandle = nil
+      cropDragStart = nil
+      cropWasMoving = false
+      needsDisplay = true
+      onStateChanged?()
+      onCanvasInteraction?()
+      return
+    }
     if let handle = cropHandle(at: point, box: box) {
       cropDragHandle = handle
       cropDragStart = point
       cropWasMoving = false
+      cropSelectionStart = nil
     } else if box.contains(point) {
+      let isFullCrop = draft.width >= interactionState.originalPixelBounds.width - 0.5
+        && draft.height >= interactionState.originalPixelBounds.height - 0.5
       cropDragHandle = nil
+      cropSelectionStart = isFullCrop ? viewport.modelPoint(fromView: point) : nil
       cropDragStart = point
-      cropWasMoving = true
+      cropWasMoving = !isFullCrop
     } else {
       cropDragHandle = nil
       cropDragStart = nil
+      cropSelectionStart = nil
     }
   }
 
   private func handleCropMouseDragged(_ point: NSPoint) {
+    if let start = cropSelectionStart {
+      let current = viewport.modelPoint(fromView: point)
+      let bounds = interactionState.originalPixelBounds
+      let clamped = CGPoint(
+        x: min(max(current.x, bounds.minX), bounds.maxX),
+        y: min(max(current.y, bounds.minY), bounds.maxY)
+      )
+      interactionState.crop.draftCropRect = CGRect(
+        x: min(start.x, clamped.x),
+        y: min(start.y, clamped.y),
+        width: abs(clamped.x - start.x),
+        height: abs(clamped.y - start.y)
+      )
+      needsDisplay = true
+      return
+    }
     guard let start = cropDragStart else { return }
     let delta = CGPoint(x: point.x - start.x, y: point.y - start.y)
     let modelDelta = CGPoint(
@@ -1088,6 +1422,7 @@ final class EditorCanvasView: NSView {
     cropDragHandle = nil
     cropDragStart = nil
     cropWasMoving = false
+    cropSelectionStart = nil
     onStateChanged?()
     onCanvasInteraction?()
   }
@@ -1170,11 +1505,20 @@ final class EditorCanvasView: NSView {
 
     let style = styleStore.renderedTextStyle(scale: interactionState.pointsToImageScale)
     let viewRect = textView.frame
+    let origin = viewport.modelPoint(fromView: viewRect.origin)
+    let currentWidth = max(viewRect.width / viewport.viewPointsPerModelPixel, 1)
+    let measured = EditorTextLayout.measuredSize(
+      text: text,
+      style: style,
+      width: currentWidth
+    )
     let modelRect = CGRect(
-      x: viewport.modelPoint(fromView: viewRect.origin).x,
-      y: viewport.modelPoint(fromView: viewRect.origin).y,
-      width: viewRect.width / viewport.viewPointsPerModelPixel,
-      height: viewRect.height / viewport.viewPointsPerModelPixel
+      x: origin.x,
+      y: origin.y,
+      width: inlineTextAnnotationID == nil
+        ? max(measured.width, 1)
+        : currentWidth,
+      height: max(measured.height, 1)
     )
     if let id = inlineTextAnnotationID {
       interactionState.replaceTextAnnotation(
@@ -1193,6 +1537,7 @@ final class EditorCanvasView: NSView {
     textView.removeFromSuperview()
     inlineEditor = nil
     inlineTextAnnotationID = nil
+    interactionState.setActiveTool(.selection)
     needsDisplay = true
     onStateChanged?()
   }
