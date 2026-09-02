@@ -12,7 +12,7 @@
 </div>
 
 <p align="center">
-  <img src="docs/assets/showcase-demo.gif" width="720" alt="SnapClip 交互演示：框选后停留在原位置进入编辑器">
+  <img src="docs/assets/menu-ui-light.png" width="376" alt="SnapClip 菜单栏工作台真实界面">
 </p>
 
 SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图工具。按熟悉的 `⇧⌘4` / `⇧⌘3`，屏幕会先冻结、变暗，框选或选中窗口后不会弹到独立编辑窗口，而是直接停留在你刚才框出的屏幕位置编辑。
@@ -36,28 +36,36 @@ SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图�
   </tr>
 </table>
 
-## 功能演示（示意图）
+## 界面与流程
+
+菜单栏工作台是真实 UI 渲染：顶部双截图入口、最近三张截图、复制/编辑/识别/保存操作都从这里出发。
 
 <table>
   <tr>
-    <td align="center" width="33%">
-      <img src="docs/assets/showcase-select.png" width="520" alt="冻结画面上的选区界面">
-    </td>
-    <td align="center" width="33%">
-      <img src="docs/assets/showcase-editor.png" width="520" alt="在原位置编辑截图">
-    </td>
     <td align="center" width="34%">
-      <img src="docs/assets/showcase-window.png" width="520" alt="窗口模式高亮">
+      <img src="docs/assets/menu-ui-light.png" width="260" alt="SnapClip 菜单栏工作台真实界面">
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/assets/showcase-select.png" width="520" alt="冻结画面上的选区示意">
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/assets/showcase-editor.png" width="520" alt="在原位置编辑截图示意">
     </td>
   </tr>
   <tr>
-    <td align="center"><sub>选区模式：拖动框选、实时尺寸、虚线珊瑚框</sub></td>
-    <td align="center"><sub>原地编辑：截图停留在原屏幕坐标</sub></td>
-    <td align="center"><sub>窗口模式：悬停高亮，点击即选窗</sub></td>
+    <td align="center"><sub>菜单栏工作台（真实 UI）</sub></td>
+    <td align="center"><sub>选区示意：虚线珊瑚框 + 实时尺寸</sub></td>
+    <td align="center"><sub>原地编辑示意：截图停留在原屏幕坐标</sub></td>
   </tr>
 </table>
 
-> 以上为流程示意图，用于展示主要交互形态；实际显示效果以本机运行为准。
+选区/编辑两张为简化流程示意图；菜单图为实际 SwiftUI 界面渲染。
+
+<p align="center">
+  <img src="docs/assets/showcase-window.png" width="560" alt="窗口模式悬停高亮示意">
+  <br>
+  <sub>窗口模式示意：悬停高亮，点击即选窗</sub>
+</p>
 
 ## 亮点
 
