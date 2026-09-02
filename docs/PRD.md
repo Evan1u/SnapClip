@@ -379,12 +379,6 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 - Preview 窗口在不同尺寸图片之间复用。
 - 固定粘贴矩阵：当前 macOS 自带 Notes、Mail 新邮件、Messages 输入框和 TextEdit 富文本必须通过图片与纯文本粘贴；Safari 当前版本的普通文本输入框必须通过纯文本粘贴。Safari 图片粘贴和第三方办公软件作为探索性兼容测试，不阻塞首版验收。
 
-### 14.3 固定性能与 OCR 样本
-
-- 使用仓库中的 `TestFixtures/performance-4k-mixed.png`，尺寸 3840×2160，SHA-256 为 `c1f617ca057cb90c1264721a6cd8dda5f7291b169ff11ffe1f039ec344d27461`。
-- OCR 基准文本为 `TestFixtures/performance-4k-mixed.expected.txt`。将结果与期望文本做 Unicode NFKC 规范化、统一全半角标点并折叠连续空白后，以字符级 Levenshtein 距离计算准确率；首版通过线为不低于 95%。
-- 性能记录使用同一 PNG；若因字体或渲染工具变化需要重建样本，必须人工复核并同时更新 PNG、期望文本、固定哈希和 PRD 基线。
-
 ## 15. 开发步骤
 
 1. 安装完整 Xcode，选择有效开发目录，确认 `xcodebuild -version`。
