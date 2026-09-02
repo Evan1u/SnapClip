@@ -21,6 +21,7 @@ let package = Package(
         .linkedFramework("Carbon"),
         .linkedFramework("CoreGraphics"),
         .linkedFramework("ImageIO"),
+        .linkedFramework("ScreenCaptureKit"),
         .linkedFramework("ServiceManagement"),
         .linkedFramework("Vision"),
         .linkedFramework("VisionKit"),

@@ -6,28 +6,6 @@ enum CaptureMode: Sendable {
   case mainDisplay
 }
 
-enum CaptureOutcome: Equatable, Sendable {
-  case captured(Data)
-  case cancelled
-}
-
-enum CaptureError: LocalizedError, Equatable {
-  case busy
-  case processFailed(Int32)
-  case invalidImage
-
-  var errorDescription: String? {
-    switch self {
-    case .busy:
-      return "另一项截图仍在进行中。"
-    case .processFailed(let status):
-      return "系统截图工具执行失败（状态码：\(status)）。"
-    case .invalidImage:
-      return "系统生成的截图不是有效图片。"
-    }
-  }
-}
-
 enum OCRState: Equatable, Sendable {
   case idle
   case recognizing

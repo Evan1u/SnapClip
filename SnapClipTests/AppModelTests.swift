@@ -3,14 +3,6 @@ import XCTest
 
 @testable import SnapClip
 
-private struct StubCaptureService: CaptureServing {
-  let outcome: CaptureOutcome
-
-  func capture(mode: CaptureMode, soundEnabled: Bool) async throws -> CaptureOutcome {
-    outcome
-  }
-}
-
 @MainActor
 private final class StubClipboardService: ClipboardServing {
   var imageWriteSucceeds = true
@@ -58,6 +50,45 @@ private final class StubEditorController: ScreenshotEditing {
 
   func focus() {}
   func shutdown() {}
+}
+
+@MainActor
+private final class StubCaptureSession: InPlaceCapturePresenting {
+  var sessionDelegate: EditorSessionDelegate?
+  private(set) var isPresenting = false
+  private(set) var requestedModes: [CaptureMode] = []
+  private(set) var soundEnabledValues: [Bool] = []
+
+  let flowResult: CaptureFlowResult
+
+  init(flowResult: CaptureFlowResult) {
+    self.flowResult = flowResult
+  }
+
+  func begin(
+    mode: CaptureMode,
+    soundEnabled: Bool
+  ) async throws -> CaptureFlowResult {
+    requestedModes.append(mode)
+    soundEnabledValues.append(soundEnabled)
+    switch flowResult {
+    case .editorOpened:
+      isPresenting = true
+      sessionDelegate?.editorDidBeginSession()
+    case .cancelled:
+      isPresenting = false
+    }
+    return flowResult
+  }
+
+  func discardActiveSession() {
+    isPresenting = false
+    sessionDelegate?.editorDidCancelSession()
+  }
+
+  func shutdown() {
+    discardActiveSession()
+  }
 }
 
 private struct StubDesktopExportService: DesktopExportServing {
@@ -116,20 +147,13 @@ private final class StubHotKeyService: HotKeyServing {
 
 @MainActor
 final class AppModelTests: XCTestCase {
-  func testSuccessfulCaptureCopiesBeforeAddingToHistory() async {
-    let data = Data([1, 2, 3])
+  func testSuccessfulCaptureOpensInPlaceEditingWithoutWriting() async {
     let clipboard = StubClipboardService()
-    let editor = StubEditorController()
-    let model = makeModel(
-      outcome: .captured(data),
-      clipboard: clipboard,
-      editor: editor
-    )
+    let model = makeModel(clipboard: clipboard)
 
     model.capture(.mainDisplay)
     await waitForCaptureToFinish(model)
 
-    XCTAssertEqual(editor.presentedCapture?.pngData, data)
     XCTAssertTrue(clipboard.copiedImages.isEmpty)
     XCTAssertTrue(model.history.items.isEmpty)
     XCTAssertTrue(model.isEditing)
@@ -138,10 +162,7 @@ final class AppModelTests: XCTestCase {
   func testNewCaptureCommitCopiesBeforeAddingToHistory() async {
     let data = Data([1, 2, 3])
     let clipboard = StubClipboardService()
-    let model = makeModel(
-      outcome: .cancelled,
-      clipboard: clipboard
-    )
+    let model = makeModel(clipboard: clipboard)
     let capturedAt = Date(timeIntervalSince1970: 100)
 
     let result = model.editorDidRequestCommit(
@@ -161,10 +182,7 @@ final class AppModelTests: XCTestCase {
   func testClipboardFailureDoesNotAddScreenshotToHistory() async {
     let clipboard = StubClipboardService()
     clipboard.imageWriteSucceeds = false
-    let model = makeModel(
-      outcome: .captured(Data([7])),
-      clipboard: clipboard
-    )
+    let model = makeModel(clipboard: clipboard)
 
     let result = model.editorDidRequestCommit(
       EditorOutput(
@@ -206,7 +224,6 @@ final class AppModelTests: XCTestCase {
     let destination = URL(fileURLWithPath: "/Desktop/SnapClip 2026-08-23 16.05.30.png")
     let exporter = StubDesktopExportService(destination: destination)
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       desktopExporter: exporter
     )
@@ -224,7 +241,6 @@ final class AppModelTests: XCTestCase {
       error: .desktopUnavailable
     )
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       desktopExporter: exporter
     )
@@ -238,7 +254,7 @@ final class AppModelTests: XCTestCase {
 
   func testCancellationLeavesClipboardAndHistoryUntouched() async {
     let clipboard = StubClipboardService()
-    let model = makeModel(outcome: .cancelled, clipboard: clipboard)
+    let model = makeModel(cancelled: true, clipboard: clipboard)
 
     model.capture(.interactive)
     await waitForCaptureToFinish(model)
@@ -253,7 +269,6 @@ final class AppModelTests: XCTestCase {
     try store(.legacyMainDisplayDefault, key: "mainDisplayShortcut", in: defaults)
 
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       defaults: defaults
     )
@@ -273,7 +288,6 @@ final class AppModelTests: XCTestCase {
     try store(.legacyMainDisplayDefault, key: "mainDisplayShortcut", in: defaults)
 
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       defaults: defaults
     )
@@ -300,7 +314,6 @@ final class AppModelTests: XCTestCase {
     try store(customMain, key: "mainDisplayShortcut", in: defaults)
     let hotKeys = StubHotKeyService()
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       defaults: defaults,
       hotKeys: hotKeys
@@ -320,7 +333,6 @@ final class AppModelTests: XCTestCase {
   func testRestoreDefaultsReportsNoChange() {
     let hotKeys = StubHotKeyService()
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       hotKeys: hotKeys
     )
@@ -337,7 +349,6 @@ final class AppModelTests: XCTestCase {
     let hotKeys = StubHotKeyService()
     hotKeys.nextError = HotKeyRegistrationError.accessibilityPermissionRequired
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       hotKeys: hotKeys
     )
@@ -368,7 +379,6 @@ final class AppModelTests: XCTestCase {
     try store(customMain, key: "mainDisplayShortcut", in: defaults)
     let hotKeys = StubHotKeyService()
     let model = makeModel(
-      outcome: .cancelled,
       clipboard: StubClipboardService(),
       defaults: defaults,
       hotKeys: hotKeys
@@ -384,9 +394,10 @@ final class AppModelTests: XCTestCase {
   }
 
   private func makeModel(
-    outcome: CaptureOutcome,
+    cancelled: Bool = false,
     clipboard: StubClipboardService,
     editor: (any ScreenshotEditing)? = nil,
+    captureSession: StubCaptureSession? = nil,
     defaults: UserDefaults = UserDefaults(suiteName: UUID().uuidString)!,
     hotKeys: StubHotKeyService? = nil,
     desktopExporter: any DesktopExportServing = StubDesktopExportService(
@@ -394,8 +405,9 @@ final class AppModelTests: XCTestCase {
     )
   ) -> AppModel {
     let hotKeys = hotKeys ?? StubHotKeyService()
+    let flowResult: CaptureFlowResult = cancelled ? .cancelled : .editorOpened
     return AppModel(
-      captureService: StubCaptureService(outcome: outcome),
+      captureSession: captureSession ?? StubCaptureSession(flowResult: flowResult),
       clipboardService: clipboard,
       desktopExportService: desktopExporter,
       ocrService: StubOCRService(),

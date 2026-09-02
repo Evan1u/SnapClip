@@ -69,14 +69,24 @@ final class EditorCanvasView: NSView {
   )
   private var inlineEditor: NSTextView?
   private var inlineTextAnnotationID: UUID?
+  private var pendingTextOrigin: CGPoint?
+  private var pendingTextWidthInPixels: CGFloat?
   private let ocrSelectionView: EditorOCRSelectionView
   private var isRotatingText = false
   private var activeResize: (annotation: EditorAnnotation, kind: CanvasResizeHandle)?
   private var resizeDidChange = false
 
+  /// When false the canvas does not paint its warm graphite workspace, letting
+  /// transparent pixels reveal the frozen overlay background behind it.
+  var drawsEditorBackground = true
+  /// Layout inset applied around the model image. The floating window keeps
+  /// 1pt breathing room; the in-place overlay sets zero for exact mapping.
+  var viewportEdgeInsets = NSEdgeInsets(top: 1, left: 1, bottom: 1, right: 1)
+
   var onStateChanged: (() -> Void)?
   var onCanvasInteraction: (() -> Void)?
   var onRequestFirstResponder: ((NSTextView) -> Void)?
+  var onCanvasDoubleClick: (() -> Void)?
 
   override var isFlipped: Bool { true }
   override var acceptsFirstResponder: Bool { true }
@@ -313,14 +323,16 @@ final class EditorCanvasView: NSView {
     super.draw(dirtyRect)
     recomputeViewport()
 
-    let backgroundColor = NSColor(
-      calibratedRed: 0.24,
-      green: 0.23,
-      blue: 0.22,
-      alpha: 1
-    )
-    backgroundColor.setFill()
-    bounds.fill()
+    if drawsEditorBackground {
+      let backgroundColor = NSColor(
+        calibratedRed: 0.24,
+        green: 0.23,
+        blue: 0.22,
+        alpha: 1
+      )
+      backgroundColor.setFill()
+      bounds.fill()
+    }
 
     drawSourceImage()
     drawAnnotations()
@@ -338,9 +350,15 @@ final class EditorCanvasView: NSView {
       modelRect = interactionState.crop.appliedCropRect
       modelPixelSize = modelRect.size
     }
+    let insetBounds = CGRect(
+      x: bounds.minX + viewportEdgeInsets.left,
+      y: bounds.minY + viewportEdgeInsets.top,
+      width: max(bounds.width - viewportEdgeInsets.left - viewportEdgeInsets.right, 1),
+      height: max(bounds.height - viewportEdgeInsets.top - viewportEdgeInsets.bottom, 1)
+    )
     let displayRect = EditorGeometry.aspectFitRect(
       for: modelPixelSize,
-      in: bounds.insetBy(dx: 1, dy: 1)
+      in: insetBounds
     )
     lastViewport = EditorCanvasViewport(modelRect: modelRect, displayRect: displayRect)
   }
@@ -797,12 +815,26 @@ final class EditorCanvasView: NSView {
     {
       if case .text(let value) = hit {
         beginInlineTextEditing(value)
+      } else {
+        onCanvasDoubleClick?()
       }
       return
     }
 
+    if event.clickCount == 2, interactionState.activeTool == .selection {
+      onCanvasDoubleClick?()
+      return
+    }
+
     if interactionState.activeTool == .text {
-      beginInlineText(at: modelPoint)
+      if inlineEditor == nil {
+        beginInlineText(at: modelPoint)
+      } else if event.clickCount == 1 {
+        commitInlineText()
+        beginInlineText(at: modelPoint)
+      } else {
+        window?.makeFirstResponder(inlineEditor)
+      }
     } else {
       interactionState.pointerDown(at: modelPoint, metrics: metrics, styleSnapshot: snapshot)
       needsDisplay = true
@@ -1447,12 +1479,27 @@ final class EditorCanvasView: NSView {
 
   // MARK: Inline text
 
+  private func inlineTextUsedSize() -> CGSize {
+    guard
+      let textView = inlineEditor,
+      let layoutManager = textView.layoutManager,
+      let container = textView.textContainer
+    else {
+      return .zero
+    }
+    layoutManager.ensureLayout(for: container)
+    let used = layoutManager.usedRect(for: container)
+    return used.size
+  }
+
   private func beginInlineText(at modelPoint: CGPoint) {
     endInlineText(commit: false)
     let style = styleStore.renderedTextStyle(scale: interactionState.pointsToImageScale)
     let viewPoint = viewport.viewPoint(fromModel: modelPoint)
     let availableWidth = max(viewport.displayRect.maxX - viewPoint.x, 80)
     let width = min(240, max(80, availableWidth))
+    pendingTextOrigin = modelPoint
+    pendingTextWidthInPixels = width / viewport.viewPointsPerModelPixel
     let frame = NSRect(x: viewPoint.x, y: viewPoint.y, width: width, height: 32)
     let textView = NSTextView(frame: frame)
     textView.isRichText = false
@@ -1463,7 +1510,17 @@ final class EditorCanvasView: NSView {
     )
     textView.textColor = style.color.nsColor
     textView.drawsBackground = false
-    textView.textContainerInset = NSSize(width: 2, height: 3)
+    textView.textContainerInset = .zero
+    textView.textContainer?.lineFragmentPadding = 0
+    textView.isVerticallyResizable = true
+    textView.isHorizontallyResizable = true
+    textView.textContainer?.widthTracksTextView = false
+    textView.textContainer?.heightTracksTextView = false
+    textView.textContainer?.containerSize = NSSize(
+      width: 10_000,
+      height: CGFloat.greatestFiniteMagnitude
+    )
+    textView.autoresizingMask = []
     textView.delegate = self
     addSubview(textView)
     inlineEditor = textView
@@ -1473,6 +1530,8 @@ final class EditorCanvasView: NSView {
   private func beginInlineTextEditing(_ annotation: TextAnnotation) {
     endInlineText(commit: false)
     let viewRect = viewport.viewRect(fromModel: annotation.frame)
+    pendingTextOrigin = annotation.frame.origin
+    pendingTextWidthInPixels = annotation.frame.width
     let textView = NSTextView(frame: viewRect)
     textView.isRichText = false
     textView.allowsUndo = false
@@ -1483,7 +1542,13 @@ final class EditorCanvasView: NSView {
     )
     textView.textColor = annotation.style.color.nsColor
     textView.drawsBackground = false
-    textView.textContainerInset = NSSize(width: 2, height: 3)
+    textView.textContainerInset = .zero
+    textView.textContainer?.lineFragmentPadding = 0
+    textView.isVerticallyResizable = true
+    textView.isHorizontallyResizable = true
+    textView.textContainer?.widthTracksTextView = false
+    textView.textContainer?.heightTracksTextView = false
+    textView.autoresizingMask = []
     textView.delegate = self
     addSubview(textView)
     inlineEditor = textView
@@ -1505,41 +1570,66 @@ final class EditorCanvasView: NSView {
 
     let style = styleStore.renderedTextStyle(scale: interactionState.pointsToImageScale)
     let viewRect = textView.frame
-    let origin = viewport.modelPoint(fromView: viewRect.origin)
-    let currentWidth = max(viewRect.width / viewport.viewPointsPerModelPixel, 1)
-    let measured = EditorTextLayout.measuredSize(
-      text: text,
-      style: style,
-      width: currentWidth
+    let origin = pendingTextOrigin ?? viewport.modelPoint(fromView: viewRect.origin)
+    let currentWidth = max(
+      pendingTextWidthInPixels ?? viewRect.width / viewport.viewPointsPerModelPixel,
+      1
+    )
+    let usedSize = inlineTextUsedSize()
+    let viewToModel = 1 / max(viewport.viewPointsPerModelPixel, 0.01)
+    let horizontalPadding = max(
+      4,
+      6 * viewToModel
     )
     let modelRect = CGRect(
       x: origin.x,
       y: origin.y,
-      width: inlineTextAnnotationID == nil
-        ? max(measured.width, 1)
-        : currentWidth,
-      height: max(measured.height, 1)
+      width: max(usedSize.width * viewToModel, currentWidth) + horizontalPadding,
+      height: max(usedSize.height * viewToModel, 1)
+    )
+    let boundedRect = clampedTextRect(
+      modelRect,
+      in: interactionState.crop.appliedCropRect
     )
     if let id = inlineTextAnnotationID {
       interactionState.replaceTextAnnotation(
         id: id,
         text: text,
-        frame: modelRect,
+        frame: boundedRect,
         style: style
       )
     } else {
       interactionState.commitNewText(
         text: text,
-        frame: modelRect,
+        frame: boundedRect,
         style: style
       )
     }
     textView.removeFromSuperview()
     inlineEditor = nil
     inlineTextAnnotationID = nil
+    pendingTextOrigin = nil
+    pendingTextWidthInPixels = nil
     interactionState.setActiveTool(.selection)
     needsDisplay = true
     onStateChanged?()
+  }
+
+  private func clampedTextRect(_ rect: CGRect, in bounds: CGRect) -> CGRect {
+    var result = rect
+    if result.maxX > bounds.maxX {
+      result.origin.x = max(bounds.minX, bounds.maxX - result.width)
+    }
+    if result.minX < bounds.minX {
+      result.origin.x = bounds.minX
+    }
+    if result.maxY > bounds.maxY {
+      result.origin.y = max(bounds.minY, bounds.maxY - result.height)
+    }
+    if result.minY < bounds.minY {
+      result.origin.y = bounds.minY
+    }
+    return result
   }
 
   private func endInlineText(commit: Bool) {
@@ -1550,6 +1640,8 @@ final class EditorCanvasView: NSView {
       inlineEditor?.removeFromSuperview()
       inlineEditor = nil
       inlineTextAnnotationID = nil
+      pendingTextOrigin = nil
+      pendingTextWidthInPixels = nil
     }
   }
 
@@ -1569,6 +1661,31 @@ final class EditorCanvasView: NSView {
 }
 
 extension EditorCanvasView: NSTextViewDelegate {
+  func textDidChange(_ notification: Notification) {
+    guard
+      inlineEditor != nil,
+      let textView = notification.object as? NSTextView,
+      textView === inlineEditor
+    else {
+      return
+    }
+    let used = inlineTextUsedSize()
+    var frame = textView.frame
+    let desiredWidth = min(max(used.width, frame.width) + 8, 10_000)
+    frame.size.width = desiredWidth
+    let targetHeight = max(used.height, 32)
+    frame.size.height = targetHeight
+    textView.frame = frame
+    if let container = textView.textContainer {
+      container.containerSize = NSSize(
+        width: desiredWidth,
+        height: max(targetHeight, 1_000)
+      )
+    }
+    textView.needsLayout = true
+    textView.needsDisplay = true
+  }
+
   func textDidEndEditing(_ notification: Notification) {
     guard inlineEditor != nil else { return }
     commitInlineText()

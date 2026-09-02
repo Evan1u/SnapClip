@@ -8,12 +8,14 @@ final class ColorPanelCoordinator: NSObject {
   private var preview: ((RGBAColor) -> Void)?
   private var cancel: (() -> Void)?
   private var lastValidColor: RGBAColor?
+  private var previousPanelLevel: NSWindow.Level?
 
   func present(
     initialColor: RGBAColor,
     onColor: @escaping (RGBAColor) -> Void,
     onPreview: @escaping (RGBAColor) -> Void,
-    onCancel: @escaping () -> Void
+    onCancel: @escaping () -> Void,
+    panelLevel: NSWindow.Level? = nil
   ) {
     closeIfNeeded()
     lastValidColor = initialColor
@@ -22,6 +24,10 @@ final class ColorPanelCoordinator: NSObject {
     cancel = onCancel
 
     let panel = NSColorPanel.shared
+    previousPanelLevel = panel.level
+    if let panelLevel {
+      panel.level = panelLevel
+    }
     panel.color = NSColor(
       srgbRed: initialColor.red,
       green: initialColor.green,
@@ -48,14 +54,7 @@ final class ColorPanelCoordinator: NSObject {
       name: NSWindow.willCloseNotification,
       object: NSColorPanel.shared
     )
-    NSColorPanel.shared.close()
-    if let lastValidColor {
-      completion?(lastValidColor)
-    }
-    completion = nil
-    preview = nil
-    cancel = nil
-    lastValidColor = nil
+    finishTransaction(commit: true)
   }
 
   func cancelColorTransaction() {
@@ -65,12 +64,7 @@ final class ColorPanelCoordinator: NSObject {
       name: NSWindow.willCloseNotification,
       object: NSColorPanel.shared
     )
-    NSColorPanel.shared.close()
-    cancel?()
-    completion = nil
-    preview = nil
-    cancel = nil
-    lastValidColor = nil
+    finishTransaction(commit: false)
   }
 
   var isPresenting: Bool {
@@ -91,13 +85,27 @@ final class ColorPanelCoordinator: NSObject {
   }
 
   @objc private func panelWillClose(_ notification: Notification) {
+    finishTransaction(commit: true)
+  }
+
+  private func finishTransaction(commit: Bool) {
     NotificationCenter.default.removeObserver(
       self,
       name: NSWindow.willCloseNotification,
-      object: notification.object
+      object: NSColorPanel.shared
     )
-    if let lastValidColor {
-      completion?(lastValidColor)
+    let panel = NSColorPanel.shared
+    if let previousPanelLevel {
+      panel.level = previousPanelLevel
+      self.previousPanelLevel = nil
+    }
+    panel.close()
+    if commit {
+      if let lastValidColor {
+        completion?(lastValidColor)
+      }
+    } else {
+      cancel?()
     }
     completion = nil
     preview = nil

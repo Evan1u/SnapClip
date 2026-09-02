@@ -30,7 +30,7 @@ final class AppModel: ObservableObject {
   @Published private(set) var recognizingItemID: UUID?
   @Published private(set) var savingItemID: UUID?
 
-  private let captureService: any CaptureServing
+  private let captureSession: any InPlaceCapturePresenting
   private let clipboardService: any ClipboardServing
   private let desktopExportService: any DesktopExportServing
   private let permissionService: any ScreenCapturePermissionServing
@@ -49,7 +49,7 @@ final class AppModel: ObservableObject {
 
   init(
     history: HistoryStore = HistoryStore(),
-    captureService: any CaptureServing = SystemCaptureService(),
+    captureSession: any InPlaceCapturePresenting = CaptureSessionController(),
     clipboardService: any ClipboardServing = SystemClipboardService(),
     desktopExportService: any DesktopExportServing = DesktopExportService(),
     ocrService: any OCRServing = VisionOCRService(),
@@ -63,7 +63,7 @@ final class AppModel: ObservableObject {
     }
   ) {
     self.history = history
-    self.captureService = captureService
+    self.captureSession = captureSession
     self.clipboardService = clipboardService
     self.desktopExportService = desktopExportService
     self.permissionService = permissionService
@@ -117,6 +117,7 @@ final class AppModel: ObservableObject {
       self.soundEnabled = userDefaults.bool(forKey: PreferenceKey.soundEnabled)
     }
     editorController.sessionDelegate = self
+    captureSession.sessionDelegate = self
   }
 
   func start() {
@@ -150,6 +151,10 @@ final class AppModel: ObservableObject {
     guard !isCapturing else { return }
     if editorController.isPresenting {
       editorController.discardActiveSession()
+      editorController.shutdown()
+    }
+    if captureSession.isPresenting {
+      captureSession.discardActiveSession()
     }
 
     guard permissionService.isAuthorized || permissionService.requestAuthorization() else {
@@ -172,21 +177,13 @@ final class AppModel: ObservableObject {
       }
 
       do {
-        let outcome = try await captureService.capture(
+        let result = try await captureSession.begin(
           mode: mode,
           soundEnabled: soundEnabled
         )
-
-        switch outcome {
-        case .captured(let data):
-          do {
-            try editorController.presentNewCapture(
-              pngData: data,
-              capturedAt: Date()
-            )
-          } catch {
-            showError(error.localizedDescription)
-          }
+        switch result {
+        case .editorOpened:
+          break
         case .cancelled:
           showFeedback("已取消截图", duration: .milliseconds(800))
         }
@@ -459,6 +456,7 @@ final class AppModel: ObservableObject {
     exportTask?.cancel()
     feedbackTask?.cancel()
     iconTask?.cancel()
+    captureSession.shutdown()
     editorController.shutdown()
     hotKeyService?.stop()
     hotKeyService = nil

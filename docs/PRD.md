@@ -126,24 +126,22 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 
 | ID | 需求 | 验收条件 |
 |---|---|---|
-| CAP-01 | `⇧⌘4` 启动交互式截图 | SnapClip 运行时不触发系统截图；默认进入选区；空格切换窗口；Esc 取消 |
-| CAP-02 | `⇧⌘3` 截取主显示器全屏 | SnapClip 运行时不触发系统截图；一次只产生一张图片 |
+| CAP-01 | `⇧⌘4` 启动交互式截图 | SnapClip 冻结并变暗各显示器；默认进入选区；选区/窗口完成后截图停留原坐标并进入同一 overlay 编辑；空格切换窗口；Esc 取消 |
+| CAP-02 | `⇧⌘3` 截取主显示器全屏 | SnapClip 冻结主显示器并直接在原位置编辑整屏；一次只产生一张图片 |
 | CAP-03 | 菜单按钮提供相同两种截图入口 | 行为与快捷键一致 |
-| CAP-04 | 截图期间拒绝重复触发 | 同一时间最多一个截图进程 |
+| CAP-04 | 截图期间拒绝重复触发 | 同一时间最多一个截图会话 |
 | CAP-05 | 成功后播放系统截图音效 | 设置关闭时保持静音 |
 | CAP-06 | 成功后菜单栏图标短暂闪动 | 不使用持续动画或轮询 |
-| CAP-07 | 取消截图不算错误 | 不修改剪贴板、历史和预览 |
+| CAP-07 | 取消截图不算错误 | 不修改剪贴板、历史；关闭 overlay 且不遗留冻结面板 |
 
-截图实现使用 `/usr/sbin/screencapture`：
+截图实现使用 ScreenCaptureKit 与 SnapClip 自有全屏 overlay：
 
-- 交互截图参数：`-i -t png <临时路径>`。
-- 主显示器截图参数：`-m -t png <临时路径>`。
-- 静音时追加 `-x`。
-- 声音由 `screencapture` 的系统行为产生；应用不额外播放音频。音效开关保存在 `UserDefaults`。
-- 临时文件名使用 UUID，位于系统临时目录。
-- 进程结束后读取 PNG；无论成功、取消或失败，都尝试删除临时文件。
-- 退出进程状态为 0 或 1 且没有输出文件时按取消处理；状态 1 即使生成了文件也按执行失败处理；只有状态 0 且存在可解码 PNG 才算成功；其他非零状态按执行失败处理。
-- 应用启动时以尽力而为方式删除系统临时目录中超过一小时的 `SnapClip-*.png`，用于回收崩溃遗留文件；不会扫描或删除其他文件。
+- 显示 overlay 前，`SCKDisplaySnapshotter` 按显示器整屏抓帧并返回像素图 + 显示器点/像素比例。
+- 每台显示器一个 `.screenSaver` 层级的无边框 panel：冻结图 + 变暗遮罩；选区在本地屏幕点坐标内完成。
+- 区域截图从冻结帧按“屏幕点→CGImage 像素”公式裁切并编码 PNG；窗口截图使用 SCK 独立窗口抓取，保留圆角透明。
+- 选区/窗口完成后不关面板：同一批面板上挂载共享 `EditorSessionCore`，画布 frame 等于选区矩形，工具栏由布局函数吸附。
+- 历史卡片“编辑”仍进入独立窗口。
+- 截图音效由应用在画面进入编辑时播放；音效开关保存在 `UserDefaults`。
 
 ### 7.2 剪贴板
 
@@ -284,6 +282,7 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 - Swift 6，SwiftUI 应用生命周期。
 - SwiftUI：菜单栏、设置和历史列表。
 - AppKit：剪贴板、应用激活和独立预览窗口。
+- ScreenCaptureKit：整屏冻结帧与独立窗口抓取。
 - VisionKit：预览图片内的实况文本定位、选择与系统复制交互。
 - Vision：本地 OCR。
 - Carbon/HIToolbox：用户自定义全局快捷键。
@@ -292,7 +291,11 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 
 ### 10.2 内部边界
 
-- `CaptureService`：异步截图，区分成功、取消、权限不足和执行失败。
+- `DisplaySnapshotService`/`SCKDisplaySnapshotter`：整屏冻结与独立窗口抓帧。
+- `CaptureSessionController`：新截图会话的冻结/选区/原地编辑/终态协调。
+- `EditorSessionCore`：历史窗口与 overlay 共享的编辑会话逻辑。
+- `EditorWindowController`：历史项编辑的独立窗口宿主。
+- `InPlaceEditorOverlayView`：新截图的原位置编辑宿主。
 - `HistoryStore`：三项环形历史及 OCR 缓存更新。
 - `ClipboardService`：复制 PNG/TIFF 图片和纯文本。
 - `DesktopExportService`：异步把用户选择的原始 PNG 保存到实际桌面目录，负责可读命名、同名序号和无覆盖提交。
@@ -306,10 +309,10 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 ### 10.3 并发规则
 
 - 所有 UI 状态在主 Actor 更新。
-- 截图进程等待和 OCR 在异步任务中执行。
+- SCK 抓帧与 PNG 裁剪/编码在异步任务中执行；overlay 只保留主 Actor 持有的冻结图引用。
 - VisionKit 预览分析在异步任务中执行；窗口切图或关闭会取消任务并使请求失效。
 - 桌面文件写入在后台任务中执行；全局同一时间最多一个保存任务，避免重复点击产生无意义副本。
-- CaptureService 通过状态门保证同一时间只有一个调用。
+- CaptureSessionController 通过会话阶段保证同一时间只有一个新截图会话。
 - OCR 使用全局状态门保证同一时间只有一个调用；历史项被淘汰时，晚到结果直接丢弃。
 
 ## 11. 权限、隐私与安全
@@ -318,14 +321,13 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 - 辅助功能未授权或授权后来失效时，菜单截图入口仍可用；设置界面提供请求授权、打开“隐私与安全性 > 辅助功能”和重新检测。macOS 可能要求退出并重新打开应用后授权才完全生效。
 - 每次截图触发都调用 `CGPreflightScreenCaptureAccess`，因此运行期间撤销或重新授予权限都能恢复；未授权时调用一次 `CGRequestScreenCaptureAccess`。
 - 权限被拒后不在同一次操作中反复弹系统提示，只提供系统设置入口。下次截图会再次预检并调用请求 API；macOS 若不再显示系统弹窗，应用仍只展示设置入口。
-- 截图通过临时文件桥接，正常、取消和失败路径均立即尝试删除；崩溃遗留文件在下次启动时按一小时阈值回收。
-- 用户退出时取消应用持有的截图和 OCR Task，并向仍运行的 `screencapture` 子进程发送终止信号；退出不等待 OCR 完成，也不保存晚到结果。正常取消依靠 `defer` 删除当前临时文件。
-- 一小时阈值避免误删仍可能被进程使用的近期文件。崩溃后立即重启时，未满一小时的残留可能保留到下一次应用启动；应用不为清理文件引入定时器。这是首版在“崩溃恢复”和“空闲零轮询”之间接受的限制。
+- 冻结帧与选区 PNG 只保存在内存中；会话取消、确认或关闭 overlay 时全部释放，不写临时文件。
+- 用户退出时取消新截图会话与 OCR Task，关闭全部 overlay panel，不保存晚到结果。
 - 历史仍只存在内存，不自动写入 Application Support、缓存或用户图片目录；只有用户明确点击“保存”时，所选 PNG 才会持久写入桌面。
 - 不访问网络、不收集日志到远端、不包含第三方 SDK。
 - VisionKit 实况文本与 Vision OCR 均完全在本机处理，不新增系统权限、不上传图片，也不持久化空间分析结果。
 - 本地调试日志不得打印 OCR 全文或截图二进制内容。
-- 首版关闭 App Sandbox 以运行系统截图进程；这是自用/签名直装方案，不是 Mac App Store 架构。
+- 应用关闭 App Sandbox，面向个人自用签名直装；截图层使用 ScreenCaptureKit，不是 Mac App Store 架构。
 
 ## 12. 非功能需求
 
@@ -358,7 +360,8 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 
 - HistoryStore：空状态、插入、上限、淘汰顺序、清空、OCR 缓存更新。
 - HotKey 配置：默认值、旧默认迁移、序列化、系统键事件吞掉、连发抑制、重复组合校验、失败回滚。
-- CaptureService：参数构造、成功、取消、进程失败、文件缺失、清理保证和并发拒绝；进程层使用注入的 Runner 模拟。
+- CaptureGeometry/Selection/Layout：Retina 点→像素裁切、Quartz/AppKit 换算、最小选区、工具栏吸附与越界夹取。
+- DisplaySnapshotService/CaptureSessionController：注入 mock snapshotter 验证整屏→选区→编辑与取消清理。
 - OCR 文本布局：不同行、同一行排序、空结果；Vision 端到端由集成测试覆盖。
 - 预览分析请求门：新请求拒绝旧结果，关窗失效后拒绝当前晚到结果。
 - AppModel：成功截图才修改剪贴板和历史；取消/失败不修改现有状态；恢复默认成功、无变化、权限重试与失败回滚。
@@ -404,7 +407,7 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 - DMG/ZIP 发布流程和版本管理。
 - 独立评估自动更新框架、更新包签名和 Feed 托管。
 
-若未来上架 Mac App Store，需要替换 `screencapture` 子进程、启用 App Sandbox，并用 ScreenCaptureKit 与自定义截图选择界面重新实现截图层。
+若未来上架 Mac App Store，需要评估 ScreenCaptureKit/沙盒在 Store 环境下的权限路径并启用 App Sandbox。
 
 ## 17. 后续路线
 
@@ -426,7 +429,7 @@ SnapClip 不显示 Dock 图标。菜单栏图标使用 SF Symbol，并有可访�
 
 | 风险 | 影响 | 缓解 |
 |---|---|---|
-| 系统截图命令行为随 macOS 改变 | 截图流程失效 | 封装 CaptureService；保留迁移 ScreenCaptureKit 的边界 |
+| ScreenCaptureKit 坐标/尺寸随显示器拓扑改变 | 选区错位或抓帧失败 | 抓帧时校验 contentRect/pointPixelScale；会话以冻结拓扑为准，变化即失败重试 |
 | 屏幕录制权限归属或状态变化 | 用户无法截图 | 启动前预检、明确恢复入口、权限回归测试 |
 | 大截图导致内存上涨 | 偏离轻量目标 | 历史保存压缩 PNG，按需解码，最多三张 |
 | Carbon API 老旧 | 长期维护风险 | 隔离 HotKeyService，未来可替换而不影响业务状态 |

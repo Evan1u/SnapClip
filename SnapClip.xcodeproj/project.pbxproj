@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A00000000000000000000101 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000001 /* AppModel.swift */; };
-		A00000000000000000000102 /* CaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000002 /* CaptureService.swift */; };
 		A00000000000000000000103 /* HotKeyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000003 /* HotKeyService.swift */; };
 		A00000000000000000000104 /* MenuBarContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000004 /* MenuBarContentView.swift */; };
 		A00000000000000000000105 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000005 /* Models.swift */; };
@@ -17,7 +16,6 @@
 		A00000000000000000000109 /* SystemServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000009 /* SystemServices.swift */; };
 		A0000000000000000000010A /* SnapClipDesign.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000B /* SnapClipDesign.swift */; };
 		A0000000000000000000010B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000C /* Assets.xcassets */; };
-		A00000000000000000000111 /* CaptureServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000011 /* CaptureServiceTests.swift */; };
 		A00000000000000000000112 /* HistoryStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000012 /* HistoryStoreTests.swift */; };
 		A0000000000000000000010E /* EditorModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0000000000000000000000D /* EditorModels.swift */; };
 		A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000013 /* HotKeyShortcutTests.swift */; };
@@ -34,6 +32,19 @@
 		A00000000000000000000117 /* ScreenshotRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000000000000000000017 /* ScreenshotRendererTests.swift */; };
 		B5000000000000000000000001 /* OCRExecutionGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000000A1 /* OCRExecutionGateTests.swift */; };
 		B6000000000000000000000001 /* ColorPanelCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000000000000000000A1 /* ColorPanelCoordinator.swift */; };
+		C10000000000000000000101 /* CaptureGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000001 /* CaptureGeometry.swift */; };
+		C10000000000000000000102 /* DisplaySnapshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000002 /* DisplaySnapshotService.swift */; };
+		C10000000000000000000103 /* CaptureSelectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000003 /* CaptureSelectionModels.swift */; };
+		C10000000000000000000104 /* EditorOverlayLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000004 /* EditorOverlayLayout.swift */; };
+		C10000000000000000000105 /* EditorSessionCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000005 /* EditorSessionCore.swift */; };
+		C10000000000000000000106 /* WindowHitTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000006 /* WindowHitTester.swift */; };
+		C10000000000000000000107 /* CaptureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000007 /* CaptureOverlayView.swift */; };
+		C10000000000000000000108 /* InPlaceEditorOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000008 /* InPlaceEditorOverlayView.swift */; };
+		C10000000000000000000109 /* CaptureSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10000000000000000000009 /* CaptureSessionController.swift */; };
+		C1000000000000000000010A /* CropResizeOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1000000000000000000000A /* CropResizeOverlayView.swift */; };
+		D10000000000000000000101 /* CaptureGeometryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000001 /* CaptureGeometryTests.swift */; };
+		D10000000000000000000102 /* CaptureSelectionModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000002 /* CaptureSelectionModelsTests.swift */; };
+		D10000000000000000000103 /* EditorOverlayLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10000000000000000000003 /* EditorOverlayLayoutTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,7 +59,6 @@
 
 /* Begin PBXFileReference section */
 		A00000000000000000000001 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		A00000000000000000000002 /* CaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureService.swift; sourceTree = "<group>"; };
 		A00000000000000000000003 /* HotKeyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyService.swift; sourceTree = "<group>"; };
 		A00000000000000000000004 /* MenuBarContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarContentView.swift; sourceTree = "<group>"; };
 		A00000000000000000000005 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -59,7 +69,6 @@
 		A0000000000000000000000B /* SnapClipDesign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapClipDesign.swift; sourceTree = "<group>"; };
 		A0000000000000000000000C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A0000000000000000000000D /* EditorModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorModels.swift; sourceTree = "<group>"; };
-		A00000000000000000000011 /* CaptureServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureServiceTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000012 /* HistoryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStoreTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000013 /* HotKeyShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyShortcutTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000014 /* OCRServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRServiceTests.swift; sourceTree = "<group>"; };
@@ -75,6 +84,19 @@
 		A00000000000000000000017 /* ScreenshotRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotRendererTests.swift; sourceTree = "<group>"; };
 		B50000000000000000000000A1 /* OCRExecutionGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRExecutionGateTests.swift; sourceTree = "<group>"; };
 		B6000000000000000000000A1 /* ColorPanelCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPanelCoordinator.swift; sourceTree = "<group>"; };
+		C10000000000000000000001 /* CaptureGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureGeometry.swift; sourceTree = "<group>"; };
+		C10000000000000000000002 /* DisplaySnapshotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplaySnapshotService.swift; sourceTree = "<group>"; };
+		C10000000000000000000003 /* CaptureSelectionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSelectionModels.swift; sourceTree = "<group>"; };
+		C10000000000000000000004 /* EditorOverlayLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorOverlayLayout.swift; sourceTree = "<group>"; };
+		C10000000000000000000005 /* EditorSessionCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorSessionCore.swift; sourceTree = "<group>"; };
+		C10000000000000000000006 /* WindowHitTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowHitTester.swift; sourceTree = "<group>"; };
+		C10000000000000000000007 /* CaptureOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayView.swift; sourceTree = "<group>"; };
+		C10000000000000000000008 /* InPlaceEditorOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InPlaceEditorOverlayView.swift; sourceTree = "<group>"; };
+		C10000000000000000000009 /* CaptureSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSessionController.swift; sourceTree = "<group>"; };
+		C1000000000000000000000A /* CropResizeOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropResizeOverlayView.swift; sourceTree = "<group>"; };
+		D10000000000000000000001 /* CaptureGeometryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureGeometryTests.swift; sourceTree = "<group>"; };
+		D10000000000000000000002 /* CaptureSelectionModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSelectionModelsTests.swift; sourceTree = "<group>"; };
+		D10000000000000000000003 /* EditorOverlayLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorOverlayLayoutTests.swift; sourceTree = "<group>"; };
 		A00000000000000000000021 /* PRD.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = PRD.md; sourceTree = "<group>"; };
 		A00000000000000000000022 /* brand-spec.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "brand-spec.md"; sourceTree = "<group>"; };
 		A00000000000000000000031 /* SnapClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,7 +137,6 @@
 				A00000000000000000000008 /* SnapClipApp.swift */,
 				A00000000000000000000005 /* Models.swift */,
 				A00000000000000000000001 /* AppModel.swift */,
-				A00000000000000000000002 /* CaptureService.swift */,
 				A00000000000000000000009 /* SystemServices.swift */,
 				A00000000000000000000003 /* HotKeyService.swift */,
 				A0000000000000000000000B /* SnapClipDesign.swift */,
@@ -131,6 +152,16 @@
 				B3000000000000000000000A1 /* LiveTextAnalysis.swift */,
 				B4000000000000000000000A1 /* EditorOCRSelectionView.swift */,
 				B6000000000000000000000A1 /* ColorPanelCoordinator.swift */,
+				C10000000000000000000001 /* CaptureGeometry.swift */,
+				C10000000000000000000002 /* DisplaySnapshotService.swift */,
+				C10000000000000000000003 /* CaptureSelectionModels.swift */,
+				C10000000000000000000004 /* EditorOverlayLayout.swift */,
+				C10000000000000000000005 /* EditorSessionCore.swift */,
+				C10000000000000000000006 /* WindowHitTester.swift */,
+				C10000000000000000000007 /* CaptureOverlayView.swift */,
+				C10000000000000000000008 /* InPlaceEditorOverlayView.swift */,
+				C10000000000000000000009 /* CaptureSessionController.swift */,
+				C1000000000000000000000A /* CropResizeOverlayView.swift */,
 				A0000000000000000000000A /* Info.plist */,
 			);
 			path = SnapClip;
@@ -140,13 +171,15 @@
 			isa = PBXGroup;
 			children = (
 				A00000000000000000000015 /* AppModelTests.swift */,
-				A00000000000000000000011 /* CaptureServiceTests.swift */,
 				A00000000000000000000012 /* HistoryStoreTests.swift */,
 				A00000000000000000000013 /* HotKeyShortcutTests.swift */,
 				A00000000000000000000014 /* OCRServiceTests.swift */,
 				A00000000000000000000016 /* EditorModelsTests.swift */,
 				A00000000000000000000017 /* ScreenshotRendererTests.swift */,
 				B50000000000000000000000A1 /* OCRExecutionGateTests.swift */,
+				D10000000000000000000001 /* CaptureGeometryTests.swift */,
+				D10000000000000000000002 /* CaptureSelectionModelsTests.swift */,
+				D10000000000000000000003 /* EditorOverlayLayoutTests.swift */,
 			);
 			path = SnapClipTests;
 			sourceTree = "<group>";
@@ -272,7 +305,6 @@
 				A00000000000000000000108 /* SnapClipApp.swift in Sources */,
 				A00000000000000000000105 /* Models.swift in Sources */,
 				A00000000000000000000101 /* AppModel.swift in Sources */,
-				A00000000000000000000102 /* CaptureService.swift in Sources */,
 				A00000000000000000000109 /* SystemServices.swift in Sources */,
 				A00000000000000000000103 /* HotKeyService.swift in Sources */,
 				A0000000000000000000010A /* SnapClipDesign.swift in Sources */,
@@ -287,6 +319,16 @@
 				B3000000000000000000000001 /* LiveTextAnalysis.swift in Sources */,
 				B4000000000000000000000001 /* EditorOCRSelectionView.swift in Sources */,
 				B6000000000000000000000001 /* ColorPanelCoordinator.swift in Sources */,
+				C10000000000000000000101 /* CaptureGeometry.swift in Sources */,
+				C10000000000000000000102 /* DisplaySnapshotService.swift in Sources */,
+				C10000000000000000000103 /* CaptureSelectionModels.swift in Sources */,
+				C10000000000000000000104 /* EditorOverlayLayout.swift in Sources */,
+				C10000000000000000000105 /* EditorSessionCore.swift in Sources */,
+				C10000000000000000000106 /* WindowHitTester.swift in Sources */,
+				C10000000000000000000107 /* CaptureOverlayView.swift in Sources */,
+				C10000000000000000000108 /* InPlaceEditorOverlayView.swift in Sources */,
+				C10000000000000000000109 /* CaptureSessionController.swift in Sources */,
+				C1000000000000000000010A /* CropResizeOverlayView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -295,13 +337,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00000000000000000000115 /* AppModelTests.swift in Sources */,
-				A00000000000000000000111 /* CaptureServiceTests.swift in Sources */,
 				A00000000000000000000112 /* HistoryStoreTests.swift in Sources */,
 				A00000000000000000000113 /* HotKeyShortcutTests.swift in Sources */,
 				A00000000000000000000114 /* OCRServiceTests.swift in Sources */,
 				A00000000000000000000116 /* EditorModelsTests.swift in Sources */,
 				A00000000000000000000117 /* ScreenshotRendererTests.swift in Sources */,
 				B5000000000000000000000001 /* OCRExecutionGateTests.swift in Sources */,
+				D10000000000000000000101 /* CaptureGeometryTests.swift in Sources */,
+				D10000000000000000000102 /* CaptureSelectionModelsTests.swift in Sources */,
+				D10000000000000000000103 /* EditorOverlayLayoutTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,7 +402,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 38BDLQYAVJ;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -367,7 +411,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
@@ -380,7 +424,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 38BDLQYAVJ;
 				ENABLE_APP_SANDBOX = NO;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -389,7 +433,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2.0;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.local.SnapClip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = macosx;
