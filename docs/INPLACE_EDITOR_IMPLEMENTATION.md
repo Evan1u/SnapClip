@@ -506,7 +506,7 @@ protocol CaptureSoundPlaying {
 
 ### Step 8：文档与收尾
 
-1. 更新 `README.md`、`docs/PRD.md`、`docs/SCREENSHOT_EDITOR_IMPLEMENTATION.md`：
+1. 更新 `README.md`、`docs/PRD.md`：
    - 删除“截图完成后停留在原屏幕坐标的全屏覆盖编辑”属于“明确不做”的表述；
    - PRD 删除 `/usr/sbin/screencapture` 实现细节与“未来迁移 SCK”的路线表述；
    - 把 CAP-01/02 验收条件改为自定义 overlay 的行为。
