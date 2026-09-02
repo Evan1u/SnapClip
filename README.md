@@ -1,88 +1,129 @@
-# SnapClip
+<div align="center">
+  <img src="SnapClip/Assets.xcassets/AppIcon.appiconset/AppIcon-128.png" width="92" alt="SnapClip icon">
+  <h1>SnapClip</h1>
+  <p><strong>把 macOS 系统截图键，变成一个只驻留菜单栏的原地截图工作台。</strong></p>
+  <p>
+    <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
+    <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
+    <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
+    <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.3.0"><img alt="Release: v1.3.0" src="https://img.shields.io/badge/Release-v1.3.0-E96548?style=flat-square"></a>
+    <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
+  </p>
+</div>
 
 <p align="center">
-  <strong>把 macOS 系统截图键，变成一个只驻留菜单栏的临时截图工作台。</strong>
+  <img src="docs/assets/showcase-demo.gif" width="720" alt="SnapClip 交互演示：框选后停留在原位置进入编辑器">
 </p>
 
-<p align="center">
-  <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
-  <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
-  <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
-  <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.3.0"><img alt="Release: v1.3.0" src="https://img.shields.io/badge/Release-v1.3.0-E96548?style=flat-square"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
-</p>
+SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图工具。按熟悉的 `⇧⌘4` / `⇧⌘3`，屏幕会先冻结、变暗，框选或选中窗口后不会弹到独立编辑窗口，而是直接停留在你刚才框出的屏幕位置编辑。
 
-<p align="center">
-  <img src="docs/assets/snapclip-demo.gif" width="480" alt="SnapClip 菜单从空历史逐步加入三张截图，并显示打开、复制文字和保存操作的功能演示">
-</p>
+确认后截图才写入剪贴板，并在应用运行期间保留最近三张。没有账号、没有云端、没有分析统计，OCR 与实况文本也全部在本机完成；退出应用，历史立即清空。
 
-SnapClip 是一款面向 Apple Silicon、macOS 14+ 的原生菜单栏截图工具。按下熟悉的 `⇧⌘4` 或 `⇧⌘3`，SnapClip 会在冻结的屏幕画面上框选、选窗口或整屏，并停在原位置进入轻量编辑器；确认后才写入剪贴板，并在应用当前运行周期内保留最近三张。图片文字识别与实况文本选择均在本机完成。
-
-没有账号、云端、分析统计或第三方运行时依赖。退出应用，截图历史随即清空。
-
-## 它解决什么问题
-
-macOS 的系统截图很可靠，但“截完立刻粘贴”“找回上一张”“从图片中复制一小段文字”通常分散在多个流程里。SnapClip 保留系统选区与窗口截图体验，只把结果收进一个轻量的菜单栏工作台：
-
-1. 按系统快捷键触发冻结画面并框选/选窗。
-2. 在原位置完成标注后确认，图片写入剪贴板，无需先保存文件。
-3. 最近三张随时可重新复制、打开、识别文字或保存到桌面。
-4. 关闭 SnapClip 后，内存历史自动清空。
-
-## 界面
+## 核心流程
 
 <table>
   <tr>
-    <td width="45%" align="center">
-      <img src="docs/assets/menu-light.png" alt="SnapClip 菜单栏弹窗，包含两个截图入口和三张截图历史">
-    </td>
-    <td width="55%" align="center">
-      <img src="docs/assets/settings-light.png" alt="SnapClip 设置窗口，包含快捷键、音效、登录启动和隐私说明">
-    </td>
+    <td align="center" width="25%"><strong>① 冻结</strong></td>
+    <td align="center" width="25%"><strong>② 选择</strong></td>
+    <td align="center" width="25%"><strong>③ 原地编辑</strong></td>
+    <td align="center" width="25%"><strong>④ 确认复制</strong></td>
   </tr>
   <tr>
-    <td align="center"><sub>菜单栏工作台 · 最近三张截图</sub></td>
-    <td align="center"><sub>设置 · 快捷键、行为与隐私状态</sub></td>
+    <td align="center">触发快捷键后，所有显示器冻结并变暗</td>
+    <td align="center">拖动框选；按空格切换窗口模式</td>
+    <td align="center">工具栏吸附在原位置，标注不跳窗</td>
+    <td align="center">双击或点 ✓，写入剪贴板与历史</td>
   </tr>
 </table>
 
-界面从圆润的拟物剪刀图标提取石墨、瓷白与珊瑚配色，支持 macOS 浅色和深色模式。完整视觉规范见 [docs/brand-spec.md](docs/brand-spec.md)。
+## 功能演示（示意图）
 
-## 功能
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="docs/assets/showcase-select.png" width="520" alt="冻结画面上的选区界面">
+    </td>
+    <td align="center" width="33%">
+      <img src="docs/assets/showcase-editor.png" width="520" alt="在原位置编辑截图">
+    </td>
+    <td align="center" width="34%">
+      <img src="docs/assets/showcase-window.png" width="520" alt="窗口模式高亮">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub>选区模式：拖动框选、实时尺寸、虚线珊瑚框</sub></td>
+    <td align="center"><sub>原地编辑：截图停留在原屏幕坐标</sub></td>
+    <td align="center"><sub>窗口模式：悬停高亮，点击即选窗</sub></td>
+  </tr>
+</table>
 
-- **接管系统截图键**：`⇧⌘4` 截取选区，按空格切换窗口；`⇧⌘3` 截取主显示器。SnapClip 运行时会阻止 macOS 再执行一次原截图动作，退出后系统行为自动恢复。
-- **原地编辑后复制**：新截图不再跳进独立窗口，而是停留在原屏幕坐标上直接标注；确认后才写入剪贴板。
-- **三项会话历史**：最新优先、最多三张；第 4 张自动淘汰最旧项，应用重启后历史为空。
-- **图片内直接选字**：在预览窗口中拖选图片里的文字，通过右键或 `⌘C` 复制所选片段。
-- **一键复制整图文字**：使用 Apple Vision 在本机识别简体中文、繁体中文和英文，结果仅在当前会话缓存。
-- **保存到桌面**：按 `SnapClip yyyy-MM-dd HH.mm.ss.png` 命名；重名时自动追加序号，不覆盖已有文件。
-- **可调设置**：重新录制两组全局快捷键、关闭截图音效、设置登录时启动或恢复默认值。
-- **本地与轻量**：无轮询定时器、无网络请求、无持久截图数据库、零第三方运行时依赖。
+> 以上为流程示意图，用于展示主要交互形态；实际显示效果以本机运行为准。
 
-## 截图编辑器（当前开发主线）
+## 亮点
 
-当前源码主线的截图流程是：`⇧⌘4`/`⇧⌘3` 触发 SnapClip 自有的冻结与选区 overlay，而不是调用系统截图界面。框选完成或选中窗口后，截图内容停留在用户框选的原始屏幕位置，工具栏直接吸附在旁边，无需跳进独立窗口。用户可二次裁剪、绘制矩形/椭圆/直线/箭头、插入可旋转文字、打马赛克，或进入 OCR 模式在图片原位拖选文字；确认后才把最终 PNG 写入剪贴板并更新最近三张历史。历史卡片的“编辑”仍使用独立编辑窗口，确认后原位替换对应历史项，不新增条目。
+### 飞书式原地编辑
+
+新截图不再打开独立窗口：
+
+- 框选/选窗完成后，画面保留在原来的屏幕位置；
+- 选区外继续冻结变暗，编辑内容不脱离截图上下文；
+- 二次裁剪可以回到完整画面重新选择，支持扩大选择框，双击确认；
+- 历史卡片“编辑”仍走独立窗口，历史与原地编辑互不干扰。
+
+### 熟悉的标注工具
+
+矩形、椭圆、直线、箭头、可旋转文字、马赛克与 OCR：
+
+- 二次裁剪 / 文字原位输入 / 双击快速通过；
+- 文字只在主动按回车时换行，不再被自动折行；
+- 本地 Vision OCR 可直接拖选图片中的文字；
+- 确认后才写剪贴板与历史，取消即全部丢弃。
+
+### 三项会话历史
+
+最新优先、最多三张；第 4 张自动淘汰最旧项。重启即清空，没有隐藏的持久化数据库。
+
+### 完全本地
+
+OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没有账号、网络接口、分析统计或第三方运行时依赖。
 
 ## 下载
 
-[下载 SnapClip v1.3.0 DMG（Apple Silicon）](https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.dmg)
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.dmg">
+        <strong>DMG</strong><br><sub>SnapClip-v1.3.0-arm64.dmg · 2.7 MiB</sub>
+      </a><br>
+      <sub><code>526caf841a2406e4d482e771d1ee4e6233540ba100ca643cddea52deeb34b050</code></sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.zip">
+        <strong>ZIP</strong><br><sub>SnapClip-v1.3.0-arm64.zip · 2.3 MiB</sub>
+      </a><br>
+      <sub><code>9afebed3dec00552822ebc8f88c48fae8a5122554d259cf824c1d6d725e248a7</code></sub>
+    </td>
+  </tr>
+</table>
 
-- 系统要求：Apple Silicon Mac、macOS 14 或更高版本。
-- 推荐安装包：`SnapClip-v1.3.0-arm64.dmg`，约 2.7 MiB。
-- DMG SHA-256：`526caf841a2406e4d482e771d1ee4e6233540ba100ca643cddea52deeb34b050`
-- 备用：[下载 ZIP](https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.zip)（约 2.3 MiB），SHA-256：`9afebed3dec00552822ebc8f88c48fae8a5122554d259cf824c1d6d725e248a7`
+**系统要求**：Apple Silicon Mac、macOS 14 或更高版本。
 
 ### 安装
 
-1. 打开 DMG，把 `SnapClip.app` 拖到其中的 `Applications` 图标。
-2. 首次尝试打开后，如果 macOS 阻止运行，请前往 **系统设置 → 隐私与安全性**，在安全提示处选择 **仍要打开**。
+1. 打开 DMG，把 `SnapClip.app` 拖进 `Applications`。
+2. 首次打开若被 Gatekeeper 阻止，前往 **系统设置 → 隐私与安全性**，选择 **仍要打开**。
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
-> `v1.3.0` 是未公证的 Pre-release。为了不在公开二进制中包含维护者证书邮箱，下载包采用 ad-hoc 签名；Gatekeeper 会把它视为未验证应用，未来更新后也可能需要重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
+<details>
+<summary><strong>关于 v1.3.0 的签名</strong></summary>
+
+`v1.3.0` 是未公证的 Pre-release。公开下载包使用 ad-hoc 签名，避免在二进制中包含维护者证书；Gatekeeper 会把它视为未验证应用，后续系统更新也可能要求重新授权。如果你需要自己的稳定签名身份、登录启动或更高信任级别，请从源码构建并选择自己的 Personal Team。
+
+</details>
 
 ### 从源码运行
 
-要求：Apple Silicon Mac、macOS 14 或更高版本，以及完整 Xcode。
+要求 Apple Silicon Mac、macOS 14+ 与完整 Xcode：
 
 ```sh
 git clone https://github.com/Evan1u/SnapClip.git
@@ -92,38 +133,35 @@ open SnapClip.xcodeproj
 
 打开工程后：
 
-1. 选择 SnapClip Target 的 **Signing & Capabilities**。
-2. 将 **Team** 替换为你自己的 Personal Team；如有需要，同时替换默认 Bundle ID `com.local.SnapClip`。
-3. 选择 **My Mac** 并运行。
-4. 首次启动时按应用提示授予权限。
+1. 在 SnapClip Target 的 **Signing & Capabilities** 中选择你自己的 Team（可同时替换默认 Bundle ID `com.local.SnapClip`）。
+2. 选择 **My Mac** 运行。
+3. 首次启动按应用提示授予权限。
 
-> 仓库保留维护者的 Team 配置，是为了让维护者本机的 TCC 权限身份在 Debug/Release 间保持稳定。该配置不包含证书或私钥，Fork 后必须选择自己的 Team。
+仓库保留维护者的 Team 配置是为了让本机 TCC 权限身份在 Debug/Release 间保持稳定；该配置不包含证书或私钥，Fork 后请替换为自己的 Team。
 
-## 为什么需要两项系统权限
+## 权限说明
 
 | 权限 | 用途 | SnapClip 不会做什么 |
 |---|---|---|
-| 辅助功能 | 在运行期间拦截 `⇧⌘3/4`，触发 SnapClip 并阻止系统重复截图 | 不记录或保存其他按键，不修改系统快捷键偏好 |
-| 屏幕与系统音频录制 | 允许系统截图工具读取屏幕画面 | 不录音、不持续录屏、不上传截图 |
-
-OCR、实况文本与截图历史全部留在本机。SnapClip 没有账号、网络接口或分析统计。
+| 辅助功能 | 运行期间接管 `⇧⌘3/4`，触发 SnapClip 并阻止系统重复截图 | 不记录其他按键，不修改系统快捷键偏好 |
+| 屏幕录制 | 通过 ScreenCaptureKit 读取屏幕并冻结画面 | 不录音、不持续录屏、不上传截图 |
 
 <details>
 <summary><strong>系统显示已授权，但截图仍被拒绝</strong></summary>
 
-macOS 的屏幕录制权限会同时校验 Bundle ID 与代码签名身份。若此前运行过 ad-hoc 构建，请退出旧实例并重置旧记录：
+macOS 的屏幕录制权限会同时校验 Bundle ID 与代码签名身份。若此前运行过 ad-hoc 构建，可重置旧记录：
 
 ```sh
 tccutil reset ScreenCapture com.local.SnapClip
 ```
 
-随后重新运行使用 Personal Team 签名的构建，并授权一次。不要切回 **Sign to Run Locally**，否则重编译后可能再次被系统识别为另一个应用。
+然后重新运行 Personal Team 签名的构建并授权一次。不要切回 **Sign to Run Locally**，否则重编译后可能被系统识别为另一个应用。
 
 </details>
 
 ## 开发与验证
 
-正式构建入口是 `SnapClip.xcodeproj`。运行测试：
+正式构建入口是 `SnapClip.xcodeproj`：
 
 ```sh
 xcodebuild -project SnapClip.xcodeproj \
@@ -133,33 +171,27 @@ xcodebuild -project SnapClip.xcodeproj \
   test
 ```
 
-`Package.swift` 仅用于无完整 Xcode 时做源码编译检查；正式 `.app`、XCTest、代码签名与系统权限验证均以 Xcode 工程为准。
-
-### 技术结构
+`Package.swift` 只用于无完整 Xcode 时做源码编译检查；正式 `.app`、XCTest、代码签名与系统权限验证均以 Xcode 工程为准。
 
 | 层 | 实现 |
 |---|---|
 | 菜单与设置 | SwiftUI `MenuBarExtra(.window)` |
-| 剪贴板与预览窗口 | AppKit |
 | 截图 | ScreenCaptureKit 整屏冻结 + SnapClip 自有全屏选区/编辑 overlay |
+| 编辑器 | AppKit `EditorCanvasView` + 共享 `EditorSessionCore` |
 | 图片内选字 | VisionKit `ImageAnalysisOverlayView` |
 | 整图 OCR | Vision |
 | 系统键接管 | Core Graphics event tap |
 | 自定义快捷键 | Carbon `RegisterEventHotKey` |
 | 登录启动 | `SMAppService.mainApp` |
 
-应用不启用 App Sandbox，面向个人自用签名直装；截图层使用 ScreenCaptureKit。完整需求、异常边界、性能目标和验收标准见 [docs/PRD.md](docs/PRD.md)。
+完整需求、异常边界与验收标准见 [docs/PRD.md](docs/PRD.md)，视觉规范见 [docs/brand-spec.md](docs/brand-spec.md)。
 
 ## 路线图
 
 - 图片搜索与 ChatGPT 流程。
-- 对外分发所需的 Developer ID 签名、公证和独立自动更新机制。
+- 对外分发所需的 Developer ID 签名、公证与自动更新机制。
 
-图片搜索尚未进入首版，也没有隐藏的联网或上传逻辑。未来若接入 OpenAI API，必须使用 Keychain 保存 API Key，并在上传图片前明确提示费用、隐私与用户同意。
-
-## 贡献
-
-欢迎提交 Issue 或 Pull Request。涉及截图权限、快捷键、TCC、VisionKit 或签名的改动，请同时说明验证环境，并尽量补充自动化测试或可复现步骤。
+图片搜索尚未进入当前版本，也没有隐藏的联网或上传逻辑。若未来接入 OpenAI API，会使用 Keychain 保存 API Key，并在上传前明确提示费用、隐私与用户同意。
 
 ## License
 
