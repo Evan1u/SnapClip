@@ -122,6 +122,12 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
 
 **系统要求**：Apple Silicon Mac、macOS 14 或更高版本。
 
+> [!IMPORTANT]
+> **从 GitHub 下载后若被 Gatekeeper 拦截（提示“无法验证开发者”或“已损坏”），不要直接双击报错关闭。**
+> 请 **右键点击 `SnapClip.app` → 打开**，或前往 **系统设置 → 隐私与安全性**，在下方安全提示中选择 **仍要打开**。
+>
+> 当前下载包是未公证的 **Apple Development Team 签名 Pre-release**，适合本机/个人使用；面向其他设备分发时，请从源码构建并选择自己的 **Developer ID** 或 **Personal Team**。
+
 ### 安装
 
 1. 打开 DMG，把 `SnapClip.app` 拖进 `Applications`。
