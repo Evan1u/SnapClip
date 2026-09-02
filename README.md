@@ -15,6 +15,12 @@
   <img src="docs/assets/menu-ui-light.png" width="376" alt="SnapClip 菜单栏工作台真实界面">
 </p>
 
+<p align="center">
+  <img src="docs/assets/showcase-demo.gif" width="700" alt="SnapClip 框选到原地编辑的流程动图">
+  <br>
+  <sub>流程动图：选区 → 原地编辑（编辑器工具栏为真实 UI 渲染）</sub>
+</p>
+
 SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图工具。按熟悉的 `⇧⌘4` / `⇧⌘3`，屏幕会先冻结、变暗，框选或选中窗口后不会弹到独立编辑窗口，而是直接停留在你刚才框出的屏幕位置编辑。
 
 确认后截图才写入剪贴板，并在应用运行期间保留最近三张。没有账号、没有云端、没有分析统计，OCR 与实况文本也全部在本机完成；退出应用，历史立即清空。
