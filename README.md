@@ -55,7 +55,7 @@ SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图�
       <img src="docs/assets/showcase-select.png" width="520" alt="冻结画面上的选区示意">
     </td>
     <td align="center" width="33%">
-      <img src="docs/assets/showcase-editor.png" width="520" alt="在原位置编辑截图示意">
+      <img src="docs/assets/showcase-editor-v2.png" width="520" alt="在原位置编辑截图示意">
     </td>
   </tr>
   <tr>
