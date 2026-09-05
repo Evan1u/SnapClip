@@ -6,7 +6,7 @@
     <a href="https://github.com/Evan1u/SnapClip"><img alt="Platform: macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-292524?style=flat-square&logo=apple&logoColor=white"></a>
     <a href="https://github.com/Evan1u/SnapClip"><img alt="Architecture: Apple Silicon" src="https://img.shields.io/badge/Apple%20Silicon-arm64-E98673?style=flat-square"></a>
     <a href="https://github.com/Evan1u/SnapClip"><img alt="Built with Swift" src="https://img.shields.io/badge/Swift-native-F05138?style=flat-square&logo=swift&logoColor=white"></a>
-    <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.3.0"><img alt="Release: v1.3.0" src="https://img.shields.io/badge/Release-v1.3.0-E96548?style=flat-square"></a>
+    <a href="https://github.com/Evan1u/SnapClip/releases/tag/v1.3.1"><img alt="Release: v1.3.1" src="https://img.shields.io/badge/Release-v1.3.1-E96548?style=flat-square"></a>
     <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-766F69?style=flat-square"></a>
   </p>
 </div>
@@ -92,6 +92,7 @@ SnapClip 是一款面向 **Apple Silicon、macOS 14+** 的原生菜单栏截图�
 - 文字只在主动按回车时换行，不再被自动折行；
 - 本地 Vision OCR 可直接拖选图片中的文字；
 - 确认后才写剪贴板与历史，取消即全部丢弃。
+- 右键分层退出：先退出当前工具或取消图形选中；空闲选择状态下再次右键，取消截图。裁剪中右键返回编辑。
 
 ### 三项会话历史
 
@@ -106,14 +107,14 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.dmg">
-        <strong>DMG</strong><br><sub>SnapClip-v1.3.0-arm64.dmg · 2.7 MiB</sub>
+      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.1/SnapClip-v1.3.1-arm64.dmg">
+        <strong>DMG</strong><br><sub>SnapClip-v1.3.1-arm64.dmg</sub>
       </a><br>
       <sub><code>c42c7e41e0e997915107d759f47ef74fa3c68575521d993686665d7815c64377</code></sub>
     </td>
     <td align="center">
-      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.0/SnapClip-v1.3.0-arm64.zip">
-        <strong>ZIP</strong><br><sub>SnapClip-v1.3.0-arm64.zip · 2.3 MiB</sub>
+      <a href="https://github.com/Evan1u/SnapClip/releases/download/v1.3.1/SnapClip-v1.3.1-arm64.zip">
+        <strong>ZIP</strong><br><sub>SnapClip-v1.3.1-arm64.zip</sub>
       </a><br>
       <sub><code>5ab001d8501715b3398c519620c8567e5b56471cb73b8bf4e1852e070d1ad411</code></sub>
     </td>
@@ -126,7 +127,7 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
 > **从 GitHub 下载后若被 Gatekeeper 拦截（提示“无法验证开发者”或“已损坏”），不要直接双击报错关闭。**
 > 请 **右键点击 `SnapClip.app` → 打开**，或前往 **系统设置 → 隐私与安全性**，在下方安全提示中选择 **仍要打开**。
 >
-> 当前下载包是未公证的 **Apple Development Team 签名 Pre-release**，适合本机/个人使用；面向其他设备分发时，请从源码构建并选择自己的 **Developer ID** 或 **Personal Team**。
+> 当前下载包是未公证的 **ad-hoc 签名 Pre-release**，适合本机/个人使用；面向其他设备分发时，请从源码构建并选择自己的 **Developer ID** 或 **Personal Team**。
 
 ### 安装
 
@@ -135,9 +136,9 @@ OCR、实况文本、历史、标注合成全部在本机完成。SnapClip 没�
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
 <details>
-<summary><strong>关于 v1.3.0 的签名</strong></summary>
+<summary><strong>关于 v1.3.1 的签名</strong></summary>
 
-`v1.3.0` 是未公证的 Pre-release。当前公开下载包使用维护者的 Apple Development Team 签名，与本机个人授权身份一致；Gatekeeper 仍可能要求“仍要打开”。如果你需要面向其他设备的稳定签名、登录启动或更高信任级别，请从源码构建并选择自己的 Developer ID 或 Personal Team。
+`v1.3.1` 是未公证的 Pre-release。当前公开下载包使用 ad-hoc 签名，不包含维护者的个人签名证书；Gatekeeper 仍可能要求“仍要打开”。如果你需要面向其他设备的稳定签名、登录启动或更高信任级别，请从源码构建并选择自己的 Developer ID 或 Personal Team。
 
 </details>
 
