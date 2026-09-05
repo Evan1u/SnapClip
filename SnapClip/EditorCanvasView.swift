@@ -198,6 +198,21 @@ final class EditorCanvasView: NSView {
     onStateChanged?()
   }
 
+  func exitToolInteraction() {
+    if activeResize != nil {
+      interactionState.cancelResize()
+      activeResize = nil
+      resizeDidChange = false
+    }
+    if isRotatingText {
+      interactionState.cancelSelectedTextRotation()
+      isRotatingText = false
+    }
+    interactionState.selectedObjectID = nil
+    setActiveTool(.selection)
+    window?.makeFirstResponder(self)
+  }
+
   func undo() {
     if inlineEditor != nil {
       cancelInlineText()

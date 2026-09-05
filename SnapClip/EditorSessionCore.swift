@@ -185,6 +185,29 @@ final class EditorSessionCore {
 
   // MARK: Toolbar state
 
+  func handleRightClick() {
+    guard session != nil else { return }
+    let state = canvas.snapshotInteractionState()
+    if state.activeTool != .selection || canvas.isInlineTextEditing
+      || state.isCropModeActive || colorPanelCoordinator.isPresenting
+      || state.selectedObjectID != nil || state.creationDraft != nil
+    {
+      exitCurrentTool()
+    } else {
+      cancelSession()
+    }
+  }
+
+  func exitCurrentTool() {
+    colorPanelCoordinator.cancelColorTransaction()
+    canvas.cancelInlineText()
+    canvas.discardCropIfNeeded()
+    canvas.exitToolInteraction()
+    toolbarModel.styleMenuPresentedTool = nil
+    NSCursor.arrow.set()
+    updateToolbar()
+  }
+
   func updateToolbar() {
     let state = canvas.snapshotInteractionState()
     let selectedIsText: Bool

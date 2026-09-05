@@ -67,7 +67,7 @@ final class CaptureSessionController: InPlaceCapturePresenting {
   private var cropContinuation: CheckedContinuation<CropResizeDecision, Never>?
   private var cropView: CropResizeOverlayView?
   private var cropTask: Task<Void, Never>?
-  private var keyMonitor: Any?
+  private var inputMonitor: Any?
   private var frozenScreens: [FrozenDisplaySnapshot] = []
   private var sessionUUID = UUID()
 
@@ -250,7 +250,7 @@ final class CaptureSessionController: InPlaceCapturePresenting {
       panel.orderFrontRegardless()
     }
     NSApp.activate(ignoringOtherApps: true)
-    installKeyMonitor()
+    installInputMonitor()
     let mouse = NSEvent.mouseLocation
     let anchorIndex = panels.firstIndex { $0.frame.contains(mouse) } ?? panels.indices.first
     if let anchorIndex {
@@ -266,9 +266,11 @@ final class CaptureSessionController: InPlaceCapturePresenting {
     selectionContinuation.resume(returning: decision)
   }
 
-  private func installKeyMonitor() {
-    removeKeyMonitor()
-    keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+  private func installInputMonitor() {
+    removeInputMonitor()
+    inputMonitor = NSEvent.addLocalMonitorForEvents(
+      matching: [.keyDown, .rightMouseDown]
+    ) {
       [weak self] event in
       guard
         let self,
@@ -276,6 +278,25 @@ final class CaptureSessionController: InPlaceCapturePresenting {
       else {
         return event
       }
+
+      if event.type == .rightMouseDown {
+        switch self.phase {
+        case .selecting:
+          self.finishSelection(.cancelled(.rightClick))
+        case .editing:
+          self.editorPresentation?.core.handleRightClick()
+        case .cropping:
+          if let continuation = self.cropContinuation {
+            self.cropContinuation = nil
+            continuation.resume(returning: .cancelled)
+          }
+          self.editorPresentation?.core.exitCurrentTool()
+        default:
+          return event
+        }
+        return nil
+      }
+
       switch self.phase {
       case .selecting:
         switch event.keyCode {
@@ -304,11 +325,11 @@ final class CaptureSessionController: InPlaceCapturePresenting {
     }
   }
 
-  private func removeKeyMonitor() {
-    if let keyMonitor {
-      NSEvent.removeMonitor(keyMonitor)
+  private func removeInputMonitor() {
+    if let inputMonitor {
+      NSEvent.removeMonitor(inputMonitor)
     }
-    keyMonitor = nil
+    inputMonitor = nil
   }
 
   // MARK: Enter editing
@@ -681,7 +702,7 @@ final class CaptureSessionController: InPlaceCapturePresenting {
   }
 
   private func teardownPanels() {
-    removeKeyMonitor()
+    removeInputMonitor()
     for panel in panels {
       panel.delegate = nil
       panel.orderOut(nil)
@@ -689,5 +710,6 @@ final class CaptureSessionController: InPlaceCapturePresenting {
     }
     panels.removeAll()
     panelViews.removeAll()
+    NSCursor.arrow.set()
   }
 }
