@@ -20,6 +20,7 @@ struct EditorToolbarModel {
   var textRotation: Double = 0
   var textColor: RGBAColor = .coral
   var isOCRWorking = false
+  var isQRCodeWorking = false
   var selectionIsText = false
 }
 
@@ -75,6 +76,7 @@ struct EditorToolbarView: View {
       toolButton(.mosaic, title: "马赛克", symbol: "square.grid.3x3.fill")
       toolButton(.crop, title: "裁剪", symbol: "crop")
       toolButton(.ocr, title: "OCR", symbol: "text.viewfinder")
+      toolButton(.qrCode, title: "二维码识别", symbol: "qrcode.viewfinder")
 
       divider
 
@@ -157,7 +159,11 @@ struct EditorToolbarView: View {
       onSelectTool(tool)
     } label: {
       VStack(spacing: 2) {
-        if tool == .text {
+        if tool == .qrCode, viewModel.model.isQRCodeWorking {
+          ProgressView()
+            .controlSize(.small)
+            .frame(width: 32, height: 28)
+        } else if tool == .text {
           Text("T")
             .font(.system(size: 17, weight: .bold))
             .frame(width: 32, height: 28)
@@ -182,7 +188,11 @@ struct EditorToolbarView: View {
       .foregroundStyle(isSelected ? accent : secondaryText)
     }
     .buttonStyle(.plain)
-    .disabled(viewModel.model.isFrozen)
+    .disabled(
+      viewModel.model.isFrozen
+        || ((tool == .ocr || tool == .qrCode)
+          && (viewModel.model.isOCRWorking || viewModel.model.isQRCodeWorking))
+    )
     .help(title)
     .accessibilityLabel(title)
     .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -256,6 +266,8 @@ private struct EditorToolStylePanel: View {
         mosaicMenu
       case .ocr:
         ocrMenu
+      case .qrCode:
+        EmptyView()
       case .selection:
         if model.selectionIsText {
           textMenu

@@ -29,6 +29,7 @@ protocol EditorSessionDelegate: AnyObject {
 
 @MainActor
 private struct EditorActiveSession {
+  let id: UUID
   let pngData: Data
   let pixelSize: CGSize
   let capturedAt: Date
@@ -45,13 +46,20 @@ final class EditorSessionCore {
 
   private let renderer: any ScreenshotRendering
   private let desktopExporter: any DesktopExportServing
+  private let qrCodeService: any QRCodeRecognizing
+  private let clipboardService: any ClipboardServing
+  private let externalURLOpener: any ExternalURLOpening
   private let styleStore = EditorToolStyleStore()
   private let colorPanelCoordinator = ColorPanelCoordinator()
+  private let qrPopoverController = QRCodeActionPopoverController()
   private let ocrGate = OCRExecutionGate(ocrService: VisionOCRService())
   private var isOCRWorking = false
+  private var isQRCodeWorking = false
+  private var qrRequestGeneration: UInt64 = 0
   private var session: EditorActiveSession?
   private var renderTask: Task<Void, Never>?
   private var ocrTask: Task<Void, Never>?
+  private var qrTask: Task<Void, Never>?
 
   let canvas: EditorCanvasView
   let toolbarModel = EditorToolbarViewModel(
@@ -75,11 +83,17 @@ final class EditorSessionCore {
   init(
     canvas: EditorCanvasView,
     renderer: any ScreenshotRendering = ScreenshotRenderer(),
-    desktopExporter: any DesktopExportServing = DesktopExportService()
+    desktopExporter: any DesktopExportServing = DesktopExportService(),
+    qrCodeService: any QRCodeRecognizing = VisionQRCodeService(),
+    clipboardService: any ClipboardServing = SystemClipboardService(),
+    externalURLOpener: any ExternalURLOpening = SystemExternalURLOpener()
   ) {
     self.canvas = canvas
     self.renderer = renderer
     self.desktopExporter = desktopExporter
+    self.qrCodeService = qrCodeService
+    self.clipboardService = clipboardService
+    self.externalURLOpener = externalURLOpener
     canvas.onStateChanged = { [weak self] in
       self?.updateToolbar()
     }
@@ -90,6 +104,24 @@ final class EditorSessionCore {
     }
     canvas.onCanvasDoubleClick = { [weak self] in
       self?.handleCanvasDoubleClick()
+    }
+    canvas.onQRCodeSelected = { [weak self] result, anchorRect in
+      self?.presentQRCodeActions(for: result, anchorRect: anchorRect)
+    }
+    canvas.onQRCodeBackgroundClick = { [weak self] in
+      self?.dismissQRCodePopover()
+    }
+    canvas.onQRCodeExitRequest = { [weak self] in
+      self?.handleRightClick()
+    }
+    qrPopoverController.onCopy = { [weak self] kind in
+      self?.handleQRCodeCopy(kind)
+    }
+    qrPopoverController.onOpen = { [weak self] kind in
+      self?.handleQRCodeOpen(kind)
+    }
+    qrPopoverController.onDismiss = { [weak canvas] in
+      canvas?.clearQRCodeSelection()
     }
   }
 
@@ -126,6 +158,7 @@ final class EditorSessionCore {
     }
 
     session = EditorActiveSession(
+      id: UUID(),
       pngData: pngData,
       pixelSize: pixelSize,
       capturedAt: capturedAt,
@@ -145,6 +178,7 @@ final class EditorSessionCore {
   }
 
   func discard() {
+    invalidateQRCodeRequest()
     renderTask?.cancel()
     renderTask = nil
     ocrTask?.cancel()
@@ -157,6 +191,7 @@ final class EditorSessionCore {
 
   func shutdown() {
     colorPanelCoordinator.closeIfNeeded()
+    invalidateQRCodeRequest()
     renderTask?.cancel()
     renderTask = nil
     ocrTask?.cancel()
@@ -179,6 +214,14 @@ final class EditorSessionCore {
       canvas.undo()
       return true
     }
+    if canvas.snapshotInteractionState().activeTool == .qrCode {
+      if qrPopoverController.isShown {
+        dismissQRCodePopover()
+      } else {
+        exitCurrentTool()
+      }
+      return true
+    }
     cancelSession()
     return true
   }
@@ -188,6 +231,10 @@ final class EditorSessionCore {
   func handleRightClick() {
     guard session != nil else { return }
     let state = canvas.snapshotInteractionState()
+    if state.activeTool == .qrCode, qrPopoverController.isShown {
+      dismissQRCodePopover()
+      return
+    }
     if state.activeTool != .selection || canvas.isInlineTextEditing
       || state.isCropModeActive || colorPanelCoordinator.isPresenting
       || state.selectedObjectID != nil || state.creationDraft != nil
@@ -199,6 +246,7 @@ final class EditorSessionCore {
   }
 
   func exitCurrentTool() {
+    invalidateQRCodeRequest()
     colorPanelCoordinator.cancelColorTransaction()
     canvas.cancelInlineText()
     canvas.discardCropIfNeeded()
@@ -232,6 +280,7 @@ final class EditorSessionCore {
       textRotation: styleStore.textDefaults.rotationDegrees,
       textColor: styleStore.textDefaults.color,
       isOCRWorking: isOCRWorking,
+      isQRCodeWorking: isQRCodeWorking,
       selectionIsText: selectedIsText
     )
   }
@@ -300,6 +349,9 @@ final class EditorSessionCore {
     if tool == .crop, let onCropStart, onCropStart() {
       return
     }
+    if tool != .qrCode {
+      invalidateQRCodeRequest()
+    }
     canvas.activateTool(tool)
     switch tool {
     case .selection:
@@ -307,7 +359,7 @@ final class EditorSessionCore {
         canvas.snapshotInteractionState().selectedObjectID != nil ? .selection : nil
     case .rectangle, .ellipse, .line, .arrow, .text, .mosaic, .ocr:
       toolbarModel.styleMenuPresentedTool = tool
-    default:
+    case .crop, .qrCode:
       toolbarModel.styleMenuPresentedTool = nil
     }
     if tool == .mosaic {
@@ -315,6 +367,9 @@ final class EditorSessionCore {
     }
     if tool == .ocr {
       prepareOCRSelection()
+    }
+    if tool == .qrCode {
+      recognizeQRCodes()
     }
   }
 
@@ -365,10 +420,11 @@ final class EditorSessionCore {
           requestID: UUID(),
           pngData: rendered
         )
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
-        self.showStatus("已复制 \(text.count) 个字符", isError: false)
+        if self.clipboardService.copyText(text) {
+          self.showStatus("已复制 \(text.count) 个字符", isError: false)
+        } else {
+          self.showStatus("无法把文字写入剪贴板。", isError: true)
+        }
       } catch is CancellationError {
         return
       } catch {
@@ -402,10 +458,151 @@ final class EditorSessionCore {
     }
   }
 
+  // MARK: QR codes
+
+  private func recognizeQRCodes() {
+    guard let session, !isQRCodeWorking else { return }
+    ocrTask?.cancel()
+    ocrTask = nil
+    invalidateQRCodeRequest()
+
+    canvas.commitPendingInlineText()
+    canvas.applyCropIfNeeded()
+    let state = canvas.snapshotInteractionState()
+    let effectiveCropRect = state.crop.appliedCropRect.integral
+      .intersection(state.originalPixelBounds)
+    guard effectiveCropRect.width > 0, effectiveCropRect.height > 0 else {
+      finishQRCodeFailure(.invalidImage)
+      return
+    }
+
+    qrRequestGeneration &+= 1
+    let generation = qrRequestGeneration
+    let sessionID = session.id
+    isQRCodeWorking = true
+    canvas.beginQRCodeMode()
+    showStatus("正在识别二维码…", isError: false)
+    updateToolbar()
+
+    qrTask = Task { [weak self] in
+      guard let self else { return }
+      do {
+        let rendered = try await self.renderer.render(
+          sourcePNG: session.pngData,
+          cropRect: effectiveCropRect,
+          annotations: state.annotations
+        )
+        guard self.acceptsQRCodeResult(sessionID: sessionID, generation: generation)
+        else { return }
+        guard
+          let bitmap = NSBitmapImageRep(data: rendered),
+          bitmap.pixelsWide == Int(effectiveCropRect.width.rounded()),
+          bitmap.pixelsHigh == Int(effectiveCropRect.height.rounded())
+        else {
+          self.finishQRCodeFailure(.invalidImage)
+          return
+        }
+
+        let results = try await self.qrCodeService.recognizeQRCodes(in: rendered)
+        guard self.acceptsQRCodeResult(sessionID: sessionID, generation: generation)
+        else { return }
+
+        self.qrTask = nil
+        self.isQRCodeWorking = false
+        self.canvas.showQRCodes(
+          results,
+          renderedPixelSize: CGSize(
+            width: bitmap.pixelsWide,
+            height: bitmap.pixelsHigh
+          ),
+          effectiveCropRect: effectiveCropRect
+        )
+        self.showStatus("识别到 \(results.count) 个二维码，点击查看", isError: false)
+        self.updateToolbar()
+      } catch is CancellationError {
+        return
+      } catch let error as QRCodeRecognitionError {
+        guard self.acceptsQRCodeResult(sessionID: sessionID, generation: generation)
+        else { return }
+        self.finishQRCodeFailure(error)
+      } catch {
+        guard self.acceptsQRCodeResult(sessionID: sessionID, generation: generation)
+        else { return }
+        self.finishQRCodeFailure(.visionFailed)
+      }
+    }
+  }
+
+  private func acceptsQRCodeResult(sessionID: UUID, generation: UInt64) -> Bool {
+    !Task.isCancelled
+      && session?.id == sessionID
+      && qrRequestGeneration == generation
+      && canvas.snapshotInteractionState().activeTool == .qrCode
+  }
+
+  private func finishQRCodeFailure(_ error: QRCodeRecognitionError) {
+    qrTask = nil
+    isQRCodeWorking = false
+    qrPopoverController.dismiss()
+    canvas.clearQRCodes()
+    canvas.setActiveTool(.selection)
+    showStatus(error.localizedDescription, isError: error != .noQRCode)
+    updateToolbar()
+  }
+
+  private func invalidateQRCodeRequest() {
+    qrRequestGeneration &+= 1
+    qrTask?.cancel()
+    qrTask = nil
+    isQRCodeWorking = false
+    qrPopoverController.dismiss()
+    canvas.clearQRCodes()
+  }
+
+  private func presentQRCodeActions(for result: QRCodeResult, anchorRect: CGRect) {
+    guard canvas.snapshotInteractionState().activeTool == .qrCode else { return }
+    qrPopoverController.present(result: result, relativeTo: anchorRect, of: canvas)
+  }
+
+  private func dismissQRCodePopover() {
+    qrPopoverController.dismiss()
+    canvas.clearQRCodeSelection()
+  }
+
+  func handleQRCodeCopy(_ kind: QRCodePayloadKind) {
+    guard session != nil else { return }
+    let text: String
+    switch kind {
+    case .link(_, _, let copyValue):
+      text = copyValue
+    case .text(let rawPayload):
+      text = rawPayload
+    }
+    if clipboardService.copyText(text) {
+      qrPopoverController.dismiss()
+      showStatus("已复制二维码内容", isError: false)
+    } else {
+      showStatus("无法把二维码内容写入剪贴板。", isError: true)
+    }
+  }
+
+  func handleQRCodeOpen(_ kind: QRCodePayloadKind) {
+    guard session != nil, case .link(let url, _, _) = kind else { return }
+    if externalURLOpener.open(url) {
+      cancelSession()
+    } else {
+      showStatus("无法打开链接。", isError: true)
+    }
+  }
+
   // MARK: Actions
 
   func saveToDesktop() {
     guard let session else { return }
+    if canvas.snapshotInteractionState().activeTool == .qrCode {
+      invalidateQRCodeRequest()
+      canvas.setActiveTool(.selection)
+    }
     canvas.commitPendingInlineText()
     canvas.applyCropIfNeeded()
     let state = canvas.snapshotInteractionState()
@@ -440,6 +637,10 @@ final class EditorSessionCore {
 
   func confirm() {
     guard let session else { return }
+    if canvas.snapshotInteractionState().activeTool == .qrCode {
+      invalidateQRCodeRequest()
+      canvas.setActiveTool(.selection)
+    }
     canvas.commitPendingInlineText()
     canvas.applyCropIfNeeded()
     let state = canvas.snapshotInteractionState()
@@ -523,10 +724,12 @@ final class EditorSessionCore {
     guard let current = session else {
       throw EditorPresentationError.invalidImage
     }
+    invalidateQRCodeRequest()
     guard let image = pixelSizedImage(from: pngData) else {
       throw EditorPresentationError.invalidImage
     }
     session = EditorActiveSession(
+      id: current.id,
       pngData: pngData,
       pixelSize: pixelSize,
       capturedAt: current.capturedAt,

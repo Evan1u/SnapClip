@@ -72,6 +72,7 @@ final class EditorCanvasView: NSView {
   private var pendingTextOrigin: CGPoint?
   private var pendingTextWidthInPixels: CGFloat?
   private let ocrSelectionView: EditorOCRSelectionView
+  private let qrCodeOverlayView: EditorQRCodeOverlayView
   private var isRotatingText = false
   private var activeResize: (annotation: EditorAnnotation, kind: CanvasResizeHandle)?
   private var resizeDidChange = false
@@ -87,6 +88,9 @@ final class EditorCanvasView: NSView {
   var onCanvasInteraction: (() -> Void)?
   var onRequestFirstResponder: ((NSTextView) -> Void)?
   var onCanvasDoubleClick: (() -> Void)?
+  var onQRCodeSelected: ((QRCodeResult, CGRect) -> Void)?
+  var onQRCodeBackgroundClick: (() -> Void)?
+  var onQRCodeExitRequest: (() -> Void)?
 
   override var isFlipped: Bool { true }
   override var acceptsFirstResponder: Bool { true }
@@ -144,9 +148,21 @@ final class EditorCanvasView: NSView {
       annotations: annotations
     )
     self.ocrSelectionView = EditorOCRSelectionView()
+    self.qrCodeOverlayView = EditorQRCodeOverlayView()
     super.init(frame: frameRect)
     ocrSelectionView.isHidden = true
+    qrCodeOverlayView.isHidden = true
+    qrCodeOverlayView.onSelect = { [weak self] result, anchorRect in
+      self?.onQRCodeSelected?(result, anchorRect)
+    }
+    qrCodeOverlayView.onBackgroundClick = { [weak self] in
+      self?.onQRCodeBackgroundClick?()
+    }
+    qrCodeOverlayView.onExitRequest = { [weak self] in
+      self?.onQRCodeExitRequest?()
+    }
     addSubview(ocrSelectionView)
+    addSubview(qrCodeOverlayView)
   }
 
   required init?(coder: NSCoder) {
@@ -154,6 +170,7 @@ final class EditorCanvasView: NSView {
   }
 
   func setImage(_ image: NSImage?) {
+    clearQRCodes()
     self.image = image
     self.sourceCGImage = image?.cgImage(
       forProposedRect: nil,
@@ -176,6 +193,9 @@ final class EditorCanvasView: NSView {
     if tool != .ocr {
       hideOCRSelection()
     }
+    if tool != .qrCode {
+      clearQRCodes()
+    }
     needsDisplay = true
     window?.invalidateCursorRects(for: self)
     if wasMosaic && tool != .mosaic {
@@ -192,6 +212,9 @@ final class EditorCanvasView: NSView {
     }
     if tool != .ocr {
       hideOCRSelection()
+    }
+    if tool != .qrCode {
+      clearQRCodes()
     }
     needsDisplay = true
     window?.invalidateCursorRects(for: self)
@@ -252,6 +275,34 @@ final class EditorCanvasView: NSView {
   func hideOCRSelection() {
     ocrSelectionView.reset()
     ocrSelectionView.isHidden = true
+  }
+
+  func beginQRCodeMode() {
+    qrCodeOverlayView.frame = bounds
+    qrCodeOverlayView.updateViewport(viewport)
+  }
+
+  func showQRCodes(
+    _ results: [QRCodeResult],
+    renderedPixelSize: CGSize,
+    effectiveCropRect: CGRect
+  ) {
+    guard interactionState.activeTool == .qrCode else { return }
+    qrCodeOverlayView.frame = bounds
+    qrCodeOverlayView.show(
+      results: results,
+      renderedPixelSize: renderedPixelSize,
+      effectiveCropRect: effectiveCropRect,
+      viewport: viewport
+    )
+  }
+
+  func clearQRCodes() {
+    qrCodeOverlayView.clear()
+  }
+
+  func clearQRCodeSelection() {
+    qrCodeOverlayView.clearSelection()
   }
 
   func updateSelectedShapeStroke(
@@ -376,6 +427,8 @@ final class EditorCanvasView: NSView {
       in: insetBounds
     )
     lastViewport = EditorCanvasViewport(modelRect: modelRect, displayRect: displayRect)
+    qrCodeOverlayView.frame = bounds
+    qrCodeOverlayView.updateViewport(lastViewport)
   }
 
   private var viewport: EditorCanvasViewport {
@@ -795,6 +848,9 @@ final class EditorCanvasView: NSView {
     if interactionState.activeTool == .ocr {
       return
     }
+    if interactionState.activeTool == .qrCode {
+      return
+    }
     if inlineEditor != nil, interactionState.activeTool != .text {
       commitInlineText()
     }
@@ -911,7 +967,7 @@ final class EditorCanvasView: NSView {
       switch interactionState.activeTool {
       case .rectangle, .ellipse, .line, .arrow:
         interactionState.setActiveTool(.selection)
-      case .mosaic, .selection, .text, .crop, .ocr:
+      case .mosaic, .selection, .text, .crop, .ocr, .qrCode:
         break
       }
     }
@@ -921,6 +977,10 @@ final class EditorCanvasView: NSView {
   }
 
   override func rightMouseDown(with event: NSEvent) {
+    if interactionState.activeTool == .qrCode {
+      onQRCodeExitRequest?()
+      return
+    }
     if interactionState.activeTool == .mosaic {
       interactionState.setActiveTool(.selection)
       needsDisplay = true

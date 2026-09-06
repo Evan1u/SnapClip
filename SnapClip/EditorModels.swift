@@ -18,6 +18,7 @@ enum EditorTool: Equatable, Sendable {
   case mosaic
   case crop
   case ocr
+  case qrCode
 }
 
 enum EditorFontDesign: String, CaseIterable, Equatable, Hashable, Sendable {
@@ -887,7 +888,7 @@ struct EditorInteractionState: Equatable, Sendable {
         points: [point],
         style: styleSnapshot.mosaic
       )
-    case .text, .crop, .ocr:
+    case .text, .crop, .ocr, .qrCode:
       break
     }
   }
