@@ -59,7 +59,9 @@ enum CanvasResizeHandle: Equatable {
 @MainActor
 final class EditorCanvasView: NSView {
   private(set) var interactionState: EditorInteractionState
-  private let styleStore: EditorToolStyleStore
+  /// Shared with the session core so toolbar changes and new annotations read
+  /// from the same app-run style defaults.
+  let styleStore: EditorToolStyleStore
   private var image: NSImage?
   private var sourceCGImage: CGImage?
   private var mosaicPreviewCache: [CGFloat: NSImage] = [:]

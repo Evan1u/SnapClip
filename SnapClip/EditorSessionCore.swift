@@ -49,7 +49,7 @@ final class EditorSessionCore {
   private let qrCodeService: any QRCodeRecognizing
   private let clipboardService: any ClipboardServing
   private let externalURLOpener: any ExternalURLOpening
-  private let styleStore = EditorToolStyleStore()
+  private let styleStore: EditorToolStyleStore
   private let colorPanelCoordinator = ColorPanelCoordinator()
   private let qrPopoverController = QRCodeActionPopoverController()
   private let ocrGate = OCRExecutionGate(ocrService: VisionOCRService())
@@ -89,6 +89,7 @@ final class EditorSessionCore {
     externalURLOpener: any ExternalURLOpening = SystemExternalURLOpener()
   ) {
     self.canvas = canvas
+    self.styleStore = canvas.styleStore
     self.renderer = renderer
     self.desktopExporter = desktopExporter
     self.qrCodeService = qrCodeService

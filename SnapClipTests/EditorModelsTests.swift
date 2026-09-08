@@ -98,6 +98,25 @@ final class EditorModelsTests: XCTestCase {
     XCTAssertEqual(snapshotSmall.text.renderedFontSizeInPixels, 9)
   }
 
+  func testSessionStyleActionsUpdateCanvasDrawingDefaults() {
+    let canvasStyleStore = EditorToolStyleStore()
+    let canvas = EditorCanvasView(
+      frame: CGRect(x: 0, y: 0, width: 200, height: 200),
+      sourcePixelSize: CGSize(width: 200, height: 200),
+      styleStore: canvasStyleStore,
+      pointsToImageScale: 2
+    )
+    let core = EditorSessionCore(canvas: canvas)
+
+    core.handleStyleAction(.strokeWidth(8))
+    core.handleStyleAction(.strokeColor(.blue))
+
+    let drawingStyle = canvas.styleStore.styleSnapshot(scale: 2).stroke
+    XCTAssertEqual(drawingStyle.nominalLineWidth, 8)
+    XCTAssertEqual(drawingStyle.renderedLineWidthInPixels, 16)
+    XCTAssertEqual(drawingStyle.color, .blue)
+  }
+
   // MARK: Shape creation
 
   func testRectangleCommitExpandsToMinimumDisplayExtent() {
