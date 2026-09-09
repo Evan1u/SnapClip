@@ -137,6 +137,23 @@ OCR、二维码扫描、实况文本、历史与标注合成全部在本机完�
 2. 首次打开若被 Gatekeeper 阻止，前往 **系统设置 → 隐私与安全性**，选择 **仍要打开**。
 3. 启动 SnapClip，按提示授予辅助功能与屏幕录制权限。
 
+### 自动更新脚本
+
+从源码克隆仓库后，可以用脚本检查并安装最新 GitHub Release（包括 Pre-release）：
+
+```sh
+./scripts/update-snapclip.sh --check
+./scripts/update-snapclip.sh
+```
+
+更新前，脚本会核对 GitHub SHA-256、Bundle ID、版本、arm64 架构、代码签名及签名主体。只有全部通过才会退出并替换 `/Applications/SnapClip.app`；替换或重新启动失败时会恢复原版本。需要先查看完整动作而不下载或修改应用，可运行：
+
+```sh
+./scripts/update-snapclip.sh --dry-run
+```
+
+脚本不会创建常驻进程或定时任务，也不会静默联网。非标准安装位置可通过 `SNAPCLIP_APP_PATH` 指定；遇到 GitHub 匿名 API 限流时，可通过环境变量 `GITHUB_TOKEN` 提供访问令牌，脚本不会打印该令牌。
+
 <details>
 <summary><strong>关于 v1.4.1 的签名</strong></summary>
 
@@ -213,7 +230,7 @@ xcodebuild -project SnapClip.xcodeproj \
 ## 路线图
 
 - 图片搜索与 ChatGPT 流程。
-- 对外分发所需的 Developer ID 签名、公证与自动更新机制。
+- 对外分发所需的 Developer ID 签名、公证与应用内自动更新机制。
 
 图片搜索尚未进入当前版本，也没有隐藏的联网或上传逻辑。若未来接入 OpenAI API，会使用 Keychain 保存 API Key，并在上传前明确提示费用、隐私与用户同意。
 
